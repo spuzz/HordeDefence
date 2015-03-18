@@ -1,0 +1,276 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Source Files\Util">
+      <UniqueIdentifier>{b3f4e3de-513a-424a-97bb-99fb1aa971b4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Model">
+      <UniqueIdentifier>{55b672e9-c4b5-4351-9159-92cf9a671ab5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Controller">
+      <UniqueIdentifier>{d730b044-da61-4b9f-a325-d504eee7efe7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\View">
+      <UniqueIdentifier>{bfe81a0a-fb05-467b-b277-7d8fdc6cfa4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Tinyxml">
+      <UniqueIdentifier>{ea7a4dad-fbfc-48c6-9bfd-ca06bc73c96b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\TmxLoader">
+      <UniqueIdentifier>{52b76569-eccb-4b51-a31d-891772504768}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\TmxLoader">
+      <UniqueIdentifier>{ed90fb37-2f05-433c-b2ab-a25ededd0ca6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Model.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="Control.cpp">
+      <Filter>Source Files\Controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Point.cpp">
+      <Filter>Source Files\Util</Filter>
+    </ClCompile>
+    <ClCompile Include="View.cpp">
+      <Filter>Source Files\View</Filter>
+    </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Source Files\Model</Filter>
+    </ClCompile>
+    <ClCompile Include="worldCreation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxEllipse.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxImage.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxImageLayer.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxLayer.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxMap.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxObject.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxObjectGroup.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxPolygon.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxPolyline.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxPropertySet.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTerrain.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTerrainArray.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTile.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTileLayer.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTileOffset.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxTileset.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\TmxUtil.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="TmxLoader\tinyxml2.cpp">
+      <Filter>Source Files\Tinyxml</Filter>
+    </ClCompile>
+    <ClCompile Include="base64\base64.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="textureLoader.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="bmp.cpp">
+      <Filter>Source Files\TmxLoader</Filter>
+    </ClCompile>
+    <ClCompile Include="Input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Unit.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Buff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Debuff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Item.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Armor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Offhand.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Knight.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="View.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Point.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="worldCreation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Main.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\Tmx.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxEllipse.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxImage.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxImageLayer.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxLayer.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxMap.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxMapTile.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxObject.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxObjectGroup.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxPoint.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxPolygon.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxPolyline.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxPropertySet.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTerrain.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTerrainArray.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTile.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTileLayer.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTileOffset.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxTileset.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="TmxLoader\TmxUtil.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="textureLoader.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="base64\base64.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bmp.h">
+      <Filter>Header Files\TmxLoader</Filter>
+    </ClInclude>
+    <ClInclude Include="Input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Unit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Buff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Debuff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Item.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Armor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Offhand.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Knight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

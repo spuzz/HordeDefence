@@ -1,0 +1,161 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{22318541-5686-4950-91CF-1C98708C0459}</ProjectGuid>
+    <RootNamespace>HordeDefence</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v120</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\aspurrel\Documents\GLFW\glfw-3.1.bin.WIN32\glfw-3.1.bin.WIN32\include;C:\Users\aspurrel\Documents\Art\SDL-devel-1.2.15-VC\SDL-1.2.15\include;C:\Users\aspurrel\Documents\Art\SDL_image-devel-1.2.12-VC\SDL_image-1.2.12\include;C:\Users\aspurrel\Documents\Art\zlib-1.2.8.tar\zlib-1.2.8\zlib-1.2.8;C:\Data\GitHub\tinyxml2;;C:\Users\aspurrel\Documents\GLM\glm-0.9.6.3\glm;C:\Users\aspurrel\Documents\Project\Astar\Astar\Astar\include</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>C:\Users\aspurrel\Documents\GLFW\glfw-3.1.bin.WIN32\glfw-3.1.bin.WIN32\lib-vc2013;C:\Users\aspurrel\Documents\Art\SDL_image-devel-1.2.12-VC\SDL_image-1.2.12\lib\x86;;C:\Users\aspurrel\Documents\Art\SDL-devel-1.2.15-VC\SDL-1.2.15\lib\x86;C:\Users\aspurrel\Documents\Art\zlib128-dll\lib;C:\Users\aspurrel\Documents\Project\Astar\Astar\Astar\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Astar.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;glfw3dll.lib;SDL.lib;SDLmain.lib;SDL_image.lib;zdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <AdditionalIncludeDirectories>C:\Users\aspurrel\Documents\GLFW\glfw-3.1.bin.WIN32\glfw-3.1.bin.WIN32\include;C:\Users\aspurrel\Documents\Art\SDL-devel-1.2.15-VC\SDL-1.2.15\include;C:\Users\aspurrel\Documents\Art\SDL_image-devel-1.2.12-VC\SDL_image-1.2.12\include;C:\Users\aspurrel\Documents\Art\zlib-1.2.8.tar\zlib-1.2.8\zlib-1.2.8;C:\Data\GitHub\tinyxml2;;C:\Users\aspurrel\Documents\GLM\glm-0.9.6.3\glm;C:\Users\aspurrel\Documents\Project\Astar\Astar\Astar\Astar</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>C:\Users\aspurrel\Documents\GLFW\glfw-3.1.bin.WIN32\glfw-3.1.bin.WIN32\lib-vc2013;C:\Users\aspurrel\Documents\Art\SDL_image-devel-1.2.12-VC\SDL_image-1.2.12\lib\x86;;C:\Users\aspurrel\Documents\Art\SDL-devel-1.2.15-VC\SDL-1.2.15\lib\x86;C:\Users\aspurrel\Documents\Art\zlib128-dll\lib;C:\Users\aspurrel\Documents\Project\Astar\Astar\Astar\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Astar.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;opengl32.lib;glfw3dll.lib;SDL.lib;SDLmain.lib;SDL_image.lib;zdll.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="Armor.cpp" />
+    <ClCompile Include="base64\base64.cpp" />
+    <ClCompile Include="bmp.cpp" />
+    <ClCompile Include="Buff.cpp" />
+    <ClCompile Include="Control.cpp" />
+    <ClCompile Include="Debuff.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="Item.cpp" />
+    <ClCompile Include="Knight.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Model.cpp" />
+    <ClCompile Include="Offhand.cpp" />
+    <ClCompile Include="Point.cpp" />
+    <ClCompile Include="textureLoader.cpp" />
+    <ClCompile Include="Tile.cpp" />
+    <ClCompile Include="TmxLoader\tinyxml2.cpp" />
+    <ClCompile Include="TmxLoader\TmxEllipse.cpp" />
+    <ClCompile Include="TmxLoader\TmxImage.cpp" />
+    <ClCompile Include="TmxLoader\TmxImageLayer.cpp" />
+    <ClCompile Include="TmxLoader\TmxLayer.cpp" />
+    <ClCompile Include="TmxLoader\TmxMap.cpp" />
+    <ClCompile Include="TmxLoader\TmxObject.cpp" />
+    <ClCompile Include="TmxLoader\TmxObjectGroup.cpp" />
+    <ClCompile Include="TmxLoader\TmxPolygon.cpp" />
+    <ClCompile Include="TmxLoader\TmxPolyline.cpp" />
+    <ClCompile Include="TmxLoader\TmxPropertySet.cpp" />
+    <ClCompile Include="TmxLoader\TmxTerrain.cpp" />
+    <ClCompile Include="TmxLoader\TmxTerrainArray.cpp" />
+    <ClCompile Include="TmxLoader\TmxTile.cpp" />
+    <ClCompile Include="TmxLoader\TmxTileLayer.cpp" />
+    <ClCompile Include="TmxLoader\TmxTileOffset.cpp" />
+    <ClCompile Include="TmxLoader\TmxTileset.cpp" />
+    <ClCompile Include="TmxLoader\TmxUtil.cpp" />
+    <ClCompile Include="Unit.cpp" />
+    <ClCompile Include="View.cpp" />
+    <ClCompile Include="Weapon.cpp" />
+    <ClCompile Include="worldCreation.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Armor.h" />
+    <ClInclude Include="base64\base64.h" />
+    <ClInclude Include="bmp.h" />
+    <ClInclude Include="Buff.h" />
+    <ClInclude Include="Control.h" />
+    <ClInclude Include="Debuff.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="Item.h" />
+    <ClInclude Include="Knight.h" />
+    <ClInclude Include="Main.h" />
+    <ClInclude Include="Model.h" />
+    <ClInclude Include="Offhand.h" />
+    <ClInclude Include="Point.h" />
+    <ClInclude Include="textureLoader.h" />
+    <ClInclude Include="Tile.h" />
+    <ClInclude Include="TmxLoader\Tmx.h" />
+    <ClInclude Include="TmxLoader\TmxEllipse.h" />
+    <ClInclude Include="TmxLoader\TmxImage.h" />
+    <ClInclude Include="TmxLoader\TmxImageLayer.h" />
+    <ClInclude Include="TmxLoader\TmxLayer.h" />
+    <ClInclude Include="TmxLoader\TmxMap.h" />
+    <ClInclude Include="TmxLoader\TmxMapTile.h" />
+    <ClInclude Include="TmxLoader\TmxObject.h" />
+    <ClInclude Include="TmxLoader\TmxObjectGroup.h" />
+    <ClInclude Include="TmxLoader\TmxPoint.h" />
+    <ClInclude Include="TmxLoader\TmxPolygon.h" />
+    <ClInclude Include="TmxLoader\TmxPolyline.h" />
+    <ClInclude Include="TmxLoader\TmxPropertySet.h" />
+    <ClInclude Include="TmxLoader\TmxTerrain.h" />
+    <ClInclude Include="TmxLoader\TmxTerrainArray.h" />
+    <ClInclude Include="TmxLoader\TmxTile.h" />
+    <ClInclude Include="TmxLoader\TmxTileLayer.h" />
+    <ClInclude Include="TmxLoader\TmxTileOffset.h" />
+    <ClInclude Include="TmxLoader\TmxTileset.h" />
+    <ClInclude Include="TmxLoader\TmxUtil.h" />
+    <ClInclude Include="Unit.h" />
+    <ClInclude Include="View.h" />
+    <ClInclude Include="Weapon.h" />
+    <ClInclude Include="worldCreation.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
