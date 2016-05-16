@@ -1,0 +1,3 @@
+[submodule "Astar"]
+	path = Astar
+	url = https://github.com/spuzz/Astar.git
