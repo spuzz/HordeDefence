@@ -1,9 +1,10 @@
 #pragma once
 #define _CRT_SECURE_NO_WARNINGS
 #include <iostream>
+#include <GL\glew.h>
 #include <GLFW/glfw3.h>
 #include <SDL.h>
-#include <SDL_image.h>
+#include "SDL_image.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
@@ -19,7 +20,9 @@ public:
 	textureLoader();
 	int LoadGLTextures();
 	std::vector<GLuint> retrieveMapTexture() { return  mapTexture; }
-	std::vector<GLuint> retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand);
+	std::vector<GLuint> retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand) const;
+	virtual void setCurrentTexture(const GLuint& nTxtr) { mCurrentTexture = nTxtr; }
+	virtual const GLuint& getCurrentTexture() { return mCurrentTexture;  }
 	virtual ~textureLoader();
 
 private:
@@ -32,5 +35,7 @@ private:
 	GLuint nextTextureID;
 	std::vector<GLuint>	mapTexture;			// Storage For 1 Texture
 	std::map<string, GLuint> unitTextures;
+
+	GLuint mCurrentTexture;
 };
 

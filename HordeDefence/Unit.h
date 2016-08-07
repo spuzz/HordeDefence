@@ -1,5 +1,5 @@
 #pragma once
-#include <iostream>
+
 #include <vector>
 #include "Buff.h"
 #include "Debuff.h"
@@ -10,17 +10,19 @@
 #include "Animation.h"
 #include <memory>
 #include "AstarService.h"
+#include "Sprite.h"
 
 enum direction { WEST, NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST };
 enum statuses { IDLE, ATTACK, DEFEND, MOVE, ATTACKMOVE };
 using std::pair;
 using std::string;
-class Unit
+class Unit : public Sprite
 {
 public:
 
-	Unit(shared_ptr<gridVector> inAstarMap);
+	Unit(shared_ptr<gridVector> inAstarMap,Vect inLocation);
 
+	virtual void draw(const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc, textureLoader& txtrLoader);
 	const Weapon getEquippedWeapon() { return mEquippedWeapon; }
 	const Armor getEquippedArmor() { return mEquippedArmor; }
 	const Offhand getEquippedOffhand() { return mEquippedOffhand; }
@@ -42,8 +44,7 @@ public:
 	std::vector<string> getAvailableArmor() { return mAvailableArmorList; }
 	std::vector<string> getAvailableOffhand() { return mAvailableOffhandList; }
 
-	std::pair<float, float> getLocation() { return mLocation; }
-	void setLocation(std::pair<float, float> inLocation) { mLocation = inLocation;  }
+
 
 	void setDirection(direction inDirection) { mFacing = inDirection; }
 	void setMovement(float inMovement) { mMovement = inMovement;  }
@@ -100,7 +101,7 @@ private:
 	float mCurrentHealth;
 	float mSize;
 
-	std::pair<float, float> mLocation;
+	
 
 	std::shared_ptr<Animation> mAnimation;
 	bool mGender;

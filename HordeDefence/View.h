@@ -1,13 +1,22 @@
 #pragma once
-#define GLFW_DLL
+#include <GL\glew.h>
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
 #include "Model.h"
 #include "textureLoader.h"
-
+#include "GUI.h"
 #include <vector>
+
+enum Views
+{
+	MAINMENU,
+	GAMEUI,
+	SETTING
+};
+
+
 using std::shared_ptr;
 class View
 {
@@ -19,6 +28,19 @@ public:
 	void setupGL(GLFWwindow* window);
 	virtual void draw(GLFWwindow* window, Model &model);
 
+	virtual bool keyAction(int key, int scancode, int action);
+	virtual bool checkScreenMoveKey(int key, int action);
+
+	bool mouseAction(int button, int action, int mods);
+
+	virtual bool loadMenu(const Views& n_view);
+	virtual void loadGameGUI();
+	virtual bool toggleGameMenu(int n_bActivate);
+
+	bool View::onExitToDesktop(const CEGUI::EventArgs& e);
+	bool View::quitCancel(const CEGUI::EventArgs& e);
+
+	// Getters and Setters
 	void setZoomFactor(float inZoom) { if (inZoom >= 6 && inZoom <= 12) { zoomFactor = inZoom; } }
 	void increaseZoomFactor(float inZoomIncrease);
 	void decreaseZoomFactor(float inZoomDecrease);
@@ -34,9 +56,19 @@ public:
 	void setXMovement(float inXMovement) { xIncreasing = inXMovement; }
 	float getXMovement() { return xIncreasing;  }
 	float getYMovement() { return yIncreasing; }
+
+	void setMouseCursor(double xPos, double yPos);
+	//bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b);
+	shared_ptr<textureLoader> getTextureLoader(void) { return std::make_shared<textureLoader>(txtrLoader);  }
+
+	void setControl(shared_ptr<Control> n_ctrl) { m_Control = shared_ptr<Control>(n_ctrl); }
+
 protected:
+	void TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites);
 
 private:
+
+	shared_ptr<Control> m_Control;
 	void InitGL();
 	float viewZoomFactor;
 	float zoomFactor;
@@ -53,4 +85,8 @@ private:
 	GLenum texture_format;
 	GLint  nOfColors;
 	int test;
+	shared_ptr<GUI> m_gui;
+
+	bool m_bMenuUp;
+	bool m_bBlockInput;
 };

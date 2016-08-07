@@ -23,7 +23,7 @@
 //-----------------------------------------------------------------------------
 #include <tinyxml2.h>
 #include <algorithm>
-#include <zlib.h>
+#include "zlib.h"
 #include <stdlib.h>
 #include <stdio.h>
 

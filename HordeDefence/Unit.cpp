@@ -2,9 +2,12 @@
 #include <algorithm>
 #include "GridAstar.h"
 
-Unit::Unit(shared_ptr<gridVector> inAstarMap) : mAnimation(new Animation()), mAstarGrid(inAstarMap)
+Unit::Unit(shared_ptr<gridVector> inAstarMap, Vect inLocation) : mAnimation(new Animation()), mAstarGrid(inAstarMap)
 {
-
+	inLocation.getX() == -1 ? setIsoLocation(Vect(0.0f, 0.0f, 0.0f)) : setIsoLocation(inLocation);
+	setAABBModelSpace(Vect(-2, -2, 0), Vect(2, 2, 1));
+	calcAABBWorldSpace();
+	//mIsoLocation.setZ(3);
 }
 void Unit::setStatus(statuses inStatus) 
 { 
@@ -82,7 +85,7 @@ void Unit::newTarget(std::pair<float, float> inTarget)
 	setTarget(inTarget);
 	shared_ptr<AstarLifeCycleHandler> handler(new AstarHandler(getChangeablePath()));
 	astar = shared_ptr<AstarService>(new GridAstarService(*getAstarGrid(), 10, -1));
-	astar->submitPath(getLocation().first, getLocation().second, mTarget.first, mTarget.second, handler);
+	astar->submitPath(getIsoLocation().getX(), getIsoLocation().getY(), mTarget.first, mTarget.second, handler);
 }
 
 void Unit::findDirection()
@@ -92,7 +95,7 @@ void Unit::findDirection()
 	}
 	// Use top left of tile/unit location unless it is the final target
 	pair<float, float> target(mPath[mPath.size() - 1].first - 0.5, mPath[mPath.size() - 1].second + 0.5);
-	pair<float, float> location(mLocation.first - (mSize / 2), mLocation.second + (mSize / 2));
+	pair<float, float> location(getIsoLocation().getX() - (mSize / 2), getIsoLocation().getY() + (mSize / 2));
 	float xMoveCheck = abs(target.first - location.first);
 	float yMoveCheck = abs(target.second - location.second);
 
@@ -165,68 +168,6 @@ void Unit::findDirection()
 		
 
 	}
-	//if (target.first > location.first)
-	//{
-	//	if (target.second == location.second)
-	//	{
-	//		mXDirMod = 1;
-	//		mFacing = EAST;
-	//	}
-	//	else if (target.second < location.second)
-	//	{
-	//		mXDirMod = 1;
-	//		mYDirMod = -1;
-	//		mFacing = SOUTHEAST;
-	//	}
-	//	else
-	//	{
-	//		mXDirMod = 1;
-	//		mYDirMod = 1;
-	//		mFacing = NORTHEAST;
-	//	}
-	//}
-	//else if (target.first == location.first)
-	//{
-	//	if (target.second == location.second)
-	//	{
-	//		
-	//		mFacing = SOUTH;
-	//	}
-	//	else if (target.second < location.second)
-	//	{
-	//		mYDirMod = -1;
-	//		mFacing = SOUTH;
-	//	}
-	//	else
-	//	{
-	//		mYDirMod = 1;
-	//		mFacing = NORTH;
-	//	}
-	//}
-	//else if (target.first < location.first)
-	//{
-	//	if (target.second == location.second)
-	//	{
-	//		mXDirMod = -1;
-
-	//		mFacing = WEST;
-	//	}
-	//	else if (target.second < location.second)
-	//	{
-	//		mXDirMod = -1;
-	//		mYDirMod = -1;
-	//		mFacing = SOUTHWEST;
-	//	}
-	//	else
-	//	{
-	//		mXDirMod = -1;
-	//		mYDirMod = 1;
-	//		mFacing = NORTHWEST;
-	//	}
-	//}
-
-
-	//mFacing = SOUTH;
 }
 
 bool Unit::checkReachedTarget(pair<float, float> location, pair<float, float> target)
@@ -246,6 +187,35 @@ bool Unit::checkReachedTarget(pair<float, float> location, pair<float, float> ta
 	}
 	else {
 		return false;
+	}
+}
+
+void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc, textureLoader& txtrLoader)
+{
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+	calcAABBWorldSpace();
+	std::vector<GLuint> character =
+		txtrLoader.retrieveUnitTexture(getRace(), getGender(), getClassType(),
+			getEquippedWeapon().getType(), getEquippedArmor().getType(), getEquippedOffhand().getType());
+	for (auto txtr : character) {
+		mIsoDepth;
+		glLoadIdentity();
+		glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
+		double x = getIsoLocation().getX();
+		double y = getIsoLocation().getY();
+		glTranslatef(x - y, (x + y) * 0.5, 0);
+		int dir = getDirection();
+		dir -= 1;
+		if (dir < 0) { dir = 7; }
+		glBindTexture(GL_TEXTURE_2D, txtr);
+		glBegin(GL_QUADS);
+		glNormal3f(0.0f, 0.0f, 1.0f);
+		glTexCoord2f((0.0f) + (floor(getAnimation()->getCurrentAnimFrame()) / 32), (1.0f) / 8 + (dir / 8.0f)); glVertex3f(-2.0f, -2.0f, 1.0f);
+		glTexCoord2f((1.0f / 32) + (floor(getAnimation()->getCurrentAnimFrame()) / 32), (1.0f / 8) + (dir / 8.0f)); glVertex3f(2.0f, -2.0f, 1.0f);
+		glTexCoord2f((1.0f / 32) + (floor(getAnimation()->getCurrentAnimFrame()) / 32), 0.0f + (dir / 8.0f)); glVertex3f(2.0f, 2.0f, 1.0f);
+		glTexCoord2f((0.0f / 32) + (floor(getAnimation()->getCurrentAnimFrame()) / 32), (0.0f / 8) + (dir / 8.0f));  glVertex3f(-2.0f, 2.0f, 1.0f);
+		glEnd();
+
 	}
 }
 

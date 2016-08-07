@@ -1,13 +1,13 @@
 #include "Knight.h"
 
 
-Knight::Knight(shared_ptr<gridVector> inAstarMap,float inMovement, float inMaxHealth, float inCurrentHealth, std::pair<float, float> inLocation, bool inGender) : Unit(inAstarMap)
+Knight::Knight(shared_ptr<gridVector> inAstarMap,float inMovement, float inMaxHealth, float inCurrentHealth, Vect inLocation, bool inGender) : Unit(inAstarMap, inLocation)
 {
 	
 	inMovement == -1 ? setMovement(1) : setMovement(inMovement);
 	inMaxHealth == -1 ? setMaxHealth(100) : setMaxHealth(inMaxHealth);
 	inCurrentHealth == -1 ? setCurrentHealth(100) : setCurrentHealth(inCurrentHealth);
-	inLocation.first == -1 ? setLocation(pair<float, float>(0.0f, 0.0f)) : setLocation(inLocation);
+	
 	setTarget(pair<float,float>(-1, -1));
 	setGender(inGender);
 	setAttackSpeed(0.5);
@@ -84,7 +84,7 @@ void Knight::update()
 void Knight::move()
 {
 	findDirection();
-	setLocation(pair<float, float>(getLocation().first + (getMovement()*mXDirMod), getLocation().second + (getMovement()*mYDirMod)));
+	setIsoLocation(Vect(getIsoLocation().getX() + (getMovement()*mXDirMod), getIsoLocation().getY()+ (getMovement()*mYDirMod), getIsoLocation().getZ()));
 }
 
 void Knight::dying()

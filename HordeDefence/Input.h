@@ -1,11 +1,11 @@
 #pragma once
-#define GLFW_DLL
-#include "View.h"
 
+#include "View.h"
+#include <GL\glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
+#include "Control.h"
 class Input
 {
 public:
@@ -29,50 +29,13 @@ public:
 	}
 	void key_callbackImpl(GLFWwindow* window, int key, int scancode, int action, int mods)
 	{
-		if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-			glfwSetWindowShouldClose(window, GL_TRUE);
-		if (key == GLFW_KEY_A ) {
-			if (action == GLFW_PRESS) {
-				mView->setXMovement(1);
-			}
-			else if(action == GLFW_RELEASE){
-				if (mView->getXMovement() != -1) {
-					mView->setXMovement(0);
-				}
-			}
-				
-		}
-		if (key == GLFW_KEY_D) {
-			if (action == GLFW_PRESS) {
-				mView->setXMovement(-1);
-			}
-			else if (action == GLFW_RELEASE){
-				if (mView->getXMovement() != 1) {
-					mView->setXMovement(0);
-				}
-				
-			}
 
+		if (mView->keyAction(key, scancode, action))
+		{
+			return;
 		}
-		if (key == GLFW_KEY_W) {
-			if (action == GLFW_PRESS) {
-				mView->setYMovement(-1);
-			}
-			else if (action == GLFW_RELEASE){
-				if (mView->getYMovement() != 1) {
-					mView->setYMovement(0);
-				}
-			}
-		}
-		if (key == GLFW_KEY_S) {
-			if (action == GLFW_PRESS) {
-				mView->setYMovement(1);
-			}
-			else if (action == GLFW_RELEASE){
-				if (mView->getYMovement() != -1) {
-					mView->setYMovement(0);
-				}
-			}
+		if (key == GLFW_KEY_Q) {
+			glfwSetWindowShouldClose(window, GL_TRUE);
 		}
 		if (key == GLFW_KEY_T) {
 			if (action == GLFW_PRESS) {
@@ -96,8 +59,10 @@ public:
 		getInstance().mouseClick_callbackImpl(window, button,action, mods);
 	}
 
+
 	void mouseClick_callbackImpl(GLFWwindow * window, int button, int action, int mods)
 	{
+		mView->mouseAction(button,action,mods);
 		if (action == GLFW_PRESS) {
 			double x_pos, y_pos;
 			int width, height;
@@ -137,13 +102,28 @@ public:
 		//... [CODE here]
 	}
 
+	static void cursorPos_callback(GLFWwindow * window, double xPos, double yPos)
+	{
+		getInstance().cursorPosCallbackImpl(xPos, yPos);
+	}
+
+	void cursorPosCallbackImpl(double xPos, double yPos)
+	{
+		mView->setMouseCursor(xPos, yPos);
+	}
+
 	static void setView(shared_ptr<View> inView)
 	{
-		getInstance().mView = inView;
+		getInstance().mView = shared_ptr<View>(inView);
 	}
 	static void setModel(shared_ptr<Model> inModel)
 	{
-		getInstance().mModel = inModel;
+		getInstance().mModel = shared_ptr<Model>(inModel);
+	}
+
+	static void setControl(shared_ptr<Control> inControl)
+	{
+		getInstance().mControl = shared_ptr<Control>(inControl);
 	}
 
 	pair<float, float> isoTo2D(pair<float, float> pt)
@@ -162,6 +142,7 @@ private:
 	}
 	shared_ptr<Model> mModel;
 	shared_ptr<View> mView;
+	shared_ptr<Control> mControl;
 	Input(Input const&); // prevent copies
 	void operator=(Input const&); // prevent assignments
 };

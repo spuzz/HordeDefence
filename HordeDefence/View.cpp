@@ -2,12 +2,18 @@
 
 #include "View.h"
 #include "Unit.h"
-
+#include <CEGUI/CEGUI.h>
+#include <CEGUI\RendererModules\OpenGL\GL3Renderer.h>
+#include "Control.h"
+#include "GameGUI.h"
 
 using std::shared_ptr;
 using std::make_shared;
 
 
+bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b) {
+	return (a->getIsoDepth() < b->getIsoDepth());
+}
 
 
 View::View()
@@ -47,12 +53,13 @@ void View::perspectiveSetup() {
 }
 void View::InitGL()
 {
-	
 	if (!txtrLoader.LoadGLTextures())								// Jump To Texture Loading Routine
 	{
 		
 		exit(0);									// If Texture Didn't Load Return FALSE
 	}
+	loadMenu(Views::GAMEUI);
+	//CEGUI::OpenGL3Renderer& gui = CEGUI::OpenGL3Renderer::bootstrapSystem();
 	texture.push_back(txtrLoader.retrieveMapTexture()[0]);
 	glEnable(GL_TEXTURE_2D);							// Enable Texture Mapping
 	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
@@ -71,74 +78,35 @@ void View::InitGL()
 
 void View::draw(GLFWwindow* window, Model &model) 
 {
+	
 	changeXScreenLoc(xIncreasing);
 	changeYScreenLoc(yIncreasing);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+
 	glBindTexture(GL_TEXTURE_2D, texture[0]);
-
-	std::shared_ptr<Tmx::Map> map = model.getTmxMap();
-	float width = map->GetWidth();
-	float height = map->GetHeight();
-	const Tmx::Tileset *set = map->GetTileset(0);
-	int widthInTiles = map->GetTileset(0)->GetImage()->GetWidth()/map->GetTileset(0)->GetTileWidth();
-	int heightInTiles = map->GetTileset(0)->GetImage()->GetHeight()/map->GetTileset(0)->GetTileHeight();
-	for (auto tileLayer : map->GetTileLayers()) {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-
-				int test = tileLayer->GetTileTilesetIndex(y, x);
-				int gid = tileLayer->GetTileId(y, x);
-				const Tmx::MapTile tileTest = tileLayer->GetTile(y, x);
-
-				if (tileTest.tilesetId == -1) {
-					continue;
-				}
-				float tileset_col = (gid % widthInTiles);
-				float tileset_row = gid / widthInTiles;
-				glLoadIdentity();
-				glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
-				glTranslatef(((width - x - 1) - (height - y - 1)), ((width - x - 1) + (height - y - 1)) *0.5,0 );
-				glBegin(GL_QUADS);
-				glNormal3f(0.0f, 0.0f, 1.0f);
-				
-				glTexCoord2f((0.0f / widthInTiles) + tileset_col / widthInTiles, (1.0f / heightInTiles) + (tileset_row / heightInTiles)); glVertex3f(-1.0f, -0.5f, 1.0f);
-				glTexCoord2f((1.0f / widthInTiles) + tileset_col / widthInTiles, (1.0f / heightInTiles) + (tileset_row / heightInTiles)); glVertex3f(1.0f, -0.5f, 1.0f);
-				glTexCoord2f((1.0f / widthInTiles) + tileset_col / widthInTiles, (0.0f / heightInTiles) + (tileset_row / heightInTiles)); glVertex3f(1.0f, 0.5f, 1.0f);
-				glTexCoord2f((0.0f / widthInTiles) + tileset_col / widthInTiles, (0.0f / heightInTiles) + (tileset_row / heightInTiles)); glVertex3f(-1.0f, 0.5f, 1.0f);
-				glEnd();
-			}
-
+	GLuint currentTxtr = 0;
+	std::vector<std::shared_ptr<Sprite>>::iterator& it = model.getSprites().begin();
+	std::vector<std::shared_ptr<Sprite>>& sprites = model.getSprites();
+	TopologicalGraphSort(sprites);
+	std::sort(sprites.begin(), sprites.end(),comparator);
+	int count = 0;
+	for (it = sprites.begin(); it != sprites.end(); ++it)
+	{
+		if (count == 0) 
+		{
+			count = 1;
+		}
+		else {
+			(*it)->draw(xScreenLoc, yScreenLoc, zScreenLoc, txtrLoader);
 		}
 	}
-	std::vector<std::shared_ptr<Unit>> unitTest = model.getPlayerUnits();
-	for (auto unit : unitTest) {
-		std::vector<GLuint> character = 
-			txtrLoader.retrieveUnitTexture(unit->getRace(), unit->getGender(), unit->getClassType(),
-			unit->getEquippedWeapon().getType(), unit->getEquippedArmor().getType(), unit->getEquippedOffhand().getType());
-		for (auto txtr : character) {
-
-			glLoadIdentity();
-			glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
-			float x = unit->getLocation().first + 1 ;
-			float y = unit->getLocation().second + 1;
-			glTranslatef(x- y, (x + y) * 0.5, 0);
-			int dir = unit->getDirection();
-			dir -= 1;
-			if (dir < 0) {dir = 7;}
-			glBindTexture(GL_TEXTURE_2D, txtr);
-			glBegin(GL_QUADS);
-			glNormal3f(0.0f, 0.0f, 1.0f);
-			glTexCoord2f((0.0f) + (floor(unit->getAnimation()->getCurrentAnimFrame()) / 32), (1.0f) / 8 + (dir / 8.0f)); glVertex3f(-2.0f, -2.0f, 1.0f);
-			glTexCoord2f((1.0f / 32) + (floor(unit->getAnimation()->getCurrentAnimFrame()) / 32), (1.0f / 8) + (dir / 8.0f)); glVertex3f(2.0f, -2.0f, 1.0f);
-			glTexCoord2f((1.0f / 32) + (floor(unit->getAnimation()->getCurrentAnimFrame()) / 32), 0.0f + (dir / 8.0f)); glVertex3f(2.0f, 2.0f, 1.0f);
-			glTexCoord2f((0.0f / 32) + (floor(unit->getAnimation()->getCurrentAnimFrame()) / 32), (0.0f / 8) + (dir / 8.0f));  glVertex3f(-2.0f, 2.0f, 1.0f);
-			glEnd();
-
-		}
-	}
+	
 	glLoadIdentity();
+	m_gui->draw();
+
 	glfwSwapBuffers(window);
 	glfwPollEvents();
+	
 }
 
 
@@ -154,16 +122,112 @@ void View::perspectiveGL(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdoubl
 }
 
 
-void View::increaseZoomFactor(float inZoomIncrease) 
-{ 
+bool View::loadMenu(const Views& n_view)
+{
+	m_gui = shared_ptr<GUI>(new GameGUI());
+	m_gui->setControl(m_Control);
+	m_gui->loadGUI();
+	return true;
+}
+
+
+// return false if no action was taken
+bool View::keyAction(int key, int scancode, int action)
+{
+
+	if (m_gui->keyAction(key, scancode, action))
+	{
+		return true;
+	}
+
+	if (checkScreenMoveKey(key, action))
+	{
+		return true;
+	}
+
+	return false;
+	
+}
+
+// return false if no action was taken
+bool View::mouseAction(int button, int action, int mods)
+{
+	m_gui->mouseAction(button,action);
+	return false;
+
+}
+
+bool View::checkScreenMoveKey(int key, int action)
+{
+	// xMove = 0 yMove = 1
+	int xyMovement = -1;
+	int direction = 0;
+	switch (key)
+	{
+	case GLFW_KEY_A:
+		xyMovement = 0;
+		direction = 1;
+		break;
+	case GLFW_KEY_D:
+		xyMovement = 0;
+		direction = -1;
+		break;
+	case GLFW_KEY_W:
+		xyMovement = 1;
+		direction = -1;
+		break;
+	case GLFW_KEY_S:
+		xyMovement = 1;
+		direction = 1;
+		break;
+	default:
+		return false;
+	}
+	if (action == GLFW_PRESS)
+	{
+		if (xyMovement)
+		{
+			setYMovement(direction);
+		}
+		else
+		{
+			setXMovement(direction);
+		}
+	}
+	else if(action == GLFW_RELEASE)
+	{
+		if (xyMovement)
+		{
+			if (getYMovement() != -(direction)) {
+				setYMovement(0);
+			}
+		}
+		else
+		{
+			if (getXMovement() != -(direction)) {
+				setXMovement(0);
+			}
+		}
+	}
+	return true;
+}
+
+
+void View::setMouseCursor(double xPos, double yPos)
+{
+	m_gui->setMousePosition(xPos,yPos);
+}
+
+void View::increaseZoomFactor(float inZoomIncrease)
+{
 	if ((zoomFactor + inZoomIncrease) >= 6 && (zoomFactor + inZoomIncrease) <= 20) {
 		zoomFactor += inZoomIncrease;
 	}
 	perspectiveSetup();
 
 }
-void View::decreaseZoomFactor(float inZoomDecrease) 
-{ 
+void View::decreaseZoomFactor(float inZoomDecrease)
+{
 	if ((zoomFactor + inZoomDecrease) >= 6 && (zoomFactor + inZoomDecrease) <= 20) {
 		zoomFactor += inZoomDecrease;
 	}
@@ -184,6 +248,63 @@ void View::changeYScreenLoc(float inYScreenLoc)
 	{
 		yScreenLoc += inYScreenLoc;
 	}
+}
+
+// Determine dependencies for the topological graph sort
+void View::TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites)
+{
+	std::vector<std::shared_ptr<Sprite>> tmpSprites;
+	int test = 0;
+	for (int a = 0; a < nSprites.size(); a++)
+	{
+
+		nSprites[a]->clearSpriteBehind();
+		if (nSprites[a]->getIsoLocation().getZ() >= 2)
+		{
+			tmpSprites.push_back(std::shared_ptr<Sprite>(nSprites[a]));
+
+		}
+		else
+		{
+			nSprites[a]->setIsoDepth(0);
+		}
+
+	}
+	int behindIndex;
+	const int isoSpritesLength = tmpSprites.size();
+	for (int i = 0; i < isoSpritesLength; ++i)
+	{
+
+		Sprite& a = *tmpSprites[i];
+		behindIndex = 0;
+
+		for (int j = 0; j < isoSpritesLength; ++j)
+		{
+			if (i != j)
+			{
+				Sprite& b = *tmpSprites[j];
+
+				if (b.getIsoLocation().getX() == 41 && b.getIsoLocation().getY() == 63)
+				{
+					int trap = 1;
+				}
+				if (b.getMin().getX() < a.getMax().getX() && b.getMin().getY() < a.getMax().getY() && b.getMin().getZ() <= a.getMax().getZ())
+				{
+					if (b.getMin().getZ() == a.getMax().getZ() && (b.getMax().getY() > a.getMax().getX()))
+						continue;
+					a.addSpriteBehind(tmpSprites[j]);
+				}
+			}
+		}
+
+		a.setIsoVisitedFlag(false);
+	}
+	int depthTest = 1;
+	for (int i = 0; i < tmpSprites.size(); ++i)
+	{
+		tmpSprites[i]->visitNode(depthTest);
+	}
+
 }
 
 View::~View()

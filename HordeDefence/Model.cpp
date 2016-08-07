@@ -3,13 +3,14 @@
 
 Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 {
-	mTiles[0] = Tile(0, 0, 0, 0, 0, 0);
-	std::string fileName = "C:/Users/aspurrel/Documents/Project/RTS/DemoMap.tmx";
+	//mTiles[0] = Tile(0, 0, 0, 0, 0, 0);
+	std::string fileName = "C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Maps\\DemoMap.tmx";
 	tmxMap->ParseFile(fileName);
 	createMap();
 
 	//Knight unitTest(1, 100, 100, pair<float, float>(50, 50), 0);
-	mPlayerUnits.push_back(std::shared_ptr<Unit>(new Knight(mAstarGrid,1, 100, 100, pair<float, float>(45, 50), 0)));
+	//mPlayerUnits.push_back(std::shared_ptr<Unit>(new Knight(mAstarGrid,1, 100, 100, Vect(45, 50, 0), 0)));
+	addPlayerUnit(std::shared_ptr<Unit>(new Knight(mAstarGrid, 1, 100, 100, Vect(40, 61, 3), 0)));
 	//mPlayerUnits.push_back(std::shared_ptr<Unit>(new Knight(mAstarGrid,1, 100, 100, pair<float, float>(30, 70), 0)));
 }
 
@@ -55,7 +56,7 @@ void Model::createMap()
 					continue;
 				}	
 				else {
-					if (walkable == 1) {
+					if (walkable == 1 || walkable == 0) {
 						mAstarGrid->at(width - x - 1)[height - y - 1] = 10;
 					}
 					else {

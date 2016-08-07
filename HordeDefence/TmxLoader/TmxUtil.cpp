@@ -26,7 +26,7 @@
 // Author: Tamir Atias
 //-----------------------------------------------------------------------------
 #include <stdlib.h>
-#include <zlib.h>
+#include "zlib.h"
 #include <stdio.h>
 
 #include "TmxUtil.h"

@@ -39,10 +39,10 @@ int textureLoader::LoadGLTextures()									// Load Bitmaps And Convert To Textu
 void textureLoader::loadUnits() 
 {
 	std::vector<std::string> list;
-	int count = GetFileList("c:\\Users\\aspurrel\\Documents\\Art\\HordeDefenceArt\\Units\\Male\\Human\\*.png", list);
+	int count = GetFileList("C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Units\\Male\\Human\\*.png", list);
 	string fileLocation;
 	for (int i = 0; i < list.size(); i++) {
-		fileLocation = "C:\\Users\\aspurrel\\Documents\\Art\\HordeDefenceArt\\Units\\Male\\Human\\" + list[i];
+		fileLocation = "C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Units\\Male\\Human\\" + list[i];
 		string delim = ".";
 		string token = list[i].substr(0,list[i].find(delim));
 		createTexture(unitTextures,token , fileLocation);
@@ -53,10 +53,10 @@ void textureLoader::loadMaps()
 {
 
 	std::vector<std::string> list;
-	int count = GetFileList("c:\\Users\\aspurrel\\Documents\\Art\\HordeDefenceArt\\Maps\\*.png", list);
+	int count = GetFileList("C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Maps\\*.png", list);
 	string mapFileLocation;
 	for (int i = 0; i < list.size(); i++) {
-		mapFileLocation = "c:\\Users\\aspurrel\\Documents\\Art\\HordeDefenceArt\\Maps\\" + list[i];
+		mapFileLocation = "C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Maps\\" + list[i];
 		createTexture(mapTexture, i,mapFileLocation);
 	}
 	
@@ -122,15 +122,15 @@ int textureLoader::GetFileList(const char *searchkey, std::vector<std::string> &
 	}
 	return list.size();
 }
-std::vector<GLuint> textureLoader::retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand)
+std::vector<GLuint> textureLoader::retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand) const
 {
 	std::vector<GLuint> retreivedTxtrs;
-	retreivedTxtrs.push_back(unitTextures[offhand]);
-	retreivedTxtrs.push_back(unitTextures["male_head1"]);
+	retreivedTxtrs.push_back(unitTextures.at(offhand));
+	retreivedTxtrs.push_back(unitTextures.at("male_head1"));
 	if (armor == "steel") { armor = "steel_armor"; }
-	retreivedTxtrs.push_back(unitTextures[armor]);
+	retreivedTxtrs.push_back(unitTextures.at(armor));
 	if (weapon == "sword") { weapon = "shortsword"; }
-	retreivedTxtrs.push_back(unitTextures[weapon]);
+	retreivedTxtrs.push_back(unitTextures.at(weapon));
 	return retreivedTxtrs;
 }
 
