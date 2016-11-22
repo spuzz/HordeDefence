@@ -5,8 +5,9 @@
 #include <glm/glm.hpp>
 #include <GL\glew.h>
 #include <GLFW/glfw3.h>
-#include <memory>s
-
+#include <memory>
+#include "textureLoader.h"
+#include "Model.h"
 class Control;
 class GUI {
 public:
@@ -16,6 +17,10 @@ public:
 
 	void init(const std::string& resourceDirectory);
 	void destroy();
+
+	virtual void start() = 0;
+	virtual void update() = 0;
+	virtual void close() = 0;
 
 	void draw();
 
@@ -42,6 +47,9 @@ public:
 	const CEGUI::GUIContext* getContext() { return m_context; }
 
 	void setControl(std::shared_ptr<Control> n_ctrl);
+	void setModel(std::shared_ptr<Model> n_model) { m_model = std::shared_ptr<Model>(n_model); }
+	void setWindow(std::shared_ptr<GLFWwindow> n_window) { m_window = std::shared_ptr<GLFWwindow>(n_window); }
+	void setTextureLoader(std::shared_ptr<textureLoader> n_loader) { m_txtrLoader = std::shared_ptr<textureLoader>(n_loader); }
 
 protected:
 	static CEGUI::OpenGL3Renderer* m_renderer;
@@ -49,4 +57,10 @@ protected:
 	CEGUI::Window* m_root = nullptr;
 
 	std::shared_ptr<Control> m_Control;
+
+	std::shared_ptr<Model> m_model;
+	std::shared_ptr<GLFWwindow> m_window;
+
+	std::vector<GLuint>	m_texture;			// Storage For 1 Texture
+	std::shared_ptr<textureLoader> m_txtrLoader;
 };

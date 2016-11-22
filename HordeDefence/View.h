@@ -33,9 +33,8 @@ public:
 
 	bool mouseAction(int button, int action, int mods);
 
-	virtual bool loadMenu(const Views& n_view);
-	virtual void loadGameGUI();
-	virtual bool toggleGameMenu(int n_bActivate);
+	virtual bool loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model);
+	//virtual bool toggleGameMenu(int n_bActivate);
 
 	bool View::onExitToDesktop(const CEGUI::EventArgs& e);
 	bool View::quitCancel(const CEGUI::EventArgs& e);
@@ -59,7 +58,7 @@ public:
 
 	void setMouseCursor(double xPos, double yPos);
 	//bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b);
-	shared_ptr<textureLoader> getTextureLoader(void) { return std::make_shared<textureLoader>(txtrLoader);  }
+	shared_ptr<textureLoader> getTextureLoader(void) { return txtrLoader;  }
 
 	void setControl(shared_ptr<Control> n_ctrl) { m_Control = shared_ptr<Control>(n_ctrl); }
 
@@ -81,7 +80,7 @@ private:
 	int scale;
 	int width, height;
 	std::vector<GLuint>	texture;			// Storage For 1 Texture
-	textureLoader txtrLoader;
+	shared_ptr<textureLoader> txtrLoader;
 	GLenum texture_format;
 	GLint  nOfColors;
 	int test;

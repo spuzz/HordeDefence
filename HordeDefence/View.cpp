@@ -11,9 +11,9 @@ using std::shared_ptr;
 using std::make_shared;
 
 
-bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b) {
-	return (a->getIsoDepth() < b->getIsoDepth());
-}
+//bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b) {
+//	return (a->getIsoDepth() < b->getIsoDepth());
+//}
 
 
 View::View()
@@ -53,14 +53,14 @@ void View::perspectiveSetup() {
 }
 void View::InitGL()
 {
-	if (!txtrLoader.LoadGLTextures())								// Jump To Texture Loading Routine
-	{
-		
-		exit(0);									// If Texture Didn't Load Return FALSE
-	}
-	loadMenu(Views::GAMEUI);
-	//CEGUI::OpenGL3Renderer& gui = CEGUI::OpenGL3Renderer::bootstrapSystem();
-	texture.push_back(txtrLoader.retrieveMapTexture()[0]);
+	//if (!txtrLoader->LoadGLTextures())								// Jump To Texture Loading Routine
+	//{
+	//	
+	//	exit(0);									// If Texture Didn't Load Return FALSE
+	//}
+	////loadMenu(Views::GAMEUI);
+	////CEGUI::OpenGL3Renderer& gui = CEGUI::OpenGL3Renderer::bootstrapSystem();
+	//texture.push_back(txtrLoader->retrieveMapTexture()[0]);
 	glEnable(GL_TEXTURE_2D);							// Enable Texture Mapping
 	glShadeModel(GL_SMOOTH);							// Enable Smooth Shading
 	glClearColor(0.0f, 0.0f, 0.0f, 0.5f);				// Black Background
@@ -78,34 +78,33 @@ void View::InitGL()
 
 void View::draw(GLFWwindow* window, Model &model) 
 {
-	
-	changeXScreenLoc(xIncreasing);
-	changeYScreenLoc(yIncreasing);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
+	//changeXScreenLoc(xIncreasing);
+	//changeYScreenLoc(yIncreasing);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 
-	glBindTexture(GL_TEXTURE_2D, texture[0]);
-	GLuint currentTxtr = 0;
-	std::vector<std::shared_ptr<Sprite>>::iterator& it = model.getSprites().begin();
-	std::vector<std::shared_ptr<Sprite>>& sprites = model.getSprites();
-	TopologicalGraphSort(sprites);
-	std::sort(sprites.begin(), sprites.end(),comparator);
-	int count = 0;
-	for (it = sprites.begin(); it != sprites.end(); ++it)
-	{
-		if (count == 0) 
-		{
-			count = 1;
-		}
-		else {
-			(*it)->draw(xScreenLoc, yScreenLoc, zScreenLoc, txtrLoader);
-		}
-	}
-	
-	glLoadIdentity();
-	m_gui->draw();
+	//glBindTexture(GL_TEXTURE_2D, texture[0]);
+	//GLuint currentTxtr = 0;
+	//std::vector<std::shared_ptr<Sprite>>::iterator& it = model.getSprites().begin();
+	//std::vector<std::shared_ptr<Sprite>>& sprites = model.getSprites();
+	//TopologicalGraphSort(sprites);
+	//std::sort(sprites.begin(), sprites.end(),comparator);
+	//int count = 0;
+	//for (it = sprites.begin(); it != sprites.end(); ++it)
+	//{
+	//	if (count == 0) 
+	//	{
+	//		count = 1;
+	//	}
+	//	else {
+	//		(*it)->draw(xScreenLoc, yScreenLoc, zScreenLoc, txtrLoader);
+	//	}
+	//}
+	//
+	//glLoadIdentity();
+	m_gui->update();
 
-	glfwSwapBuffers(window);
-	glfwPollEvents();
+	//glfwSwapBuffers(window);
+	//glfwPollEvents();
 	
 }
 
@@ -122,11 +121,28 @@ void View::perspectiveGL(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdoubl
 }
 
 
-bool View::loadMenu(const Views& n_view)
+bool View::loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model)
 {
+
+	if (m_gui)
+	{
+		m_gui->close();
+	}
+	txtrLoader = shared_ptr<textureLoader>(new textureLoader());
+	if (!txtrLoader->LoadGLTextures())								// Jump To Texture Loading Routine
+	{
+
+		exit(0);									// If Texture Didn't Load Return FALSE
+	}
+	
+	
 	m_gui = shared_ptr<GUI>(new GameGUI());
+	m_gui->setTextureLoader(txtrLoader);
 	m_gui->setControl(m_Control);
+	m_gui->setWindow(n_window);
+	m_gui->setModel(n_model);
 	m_gui->loadGUI();
+	m_gui->start();
 	return true;
 }
 
@@ -140,10 +156,7 @@ bool View::keyAction(int key, int scancode, int action)
 		return true;
 	}
 
-	if (checkScreenMoveKey(key, action))
-	{
-		return true;
-	}
+
 
 	return false;
 	
@@ -218,94 +231,6 @@ void View::setMouseCursor(double xPos, double yPos)
 	m_gui->setMousePosition(xPos,yPos);
 }
 
-void View::increaseZoomFactor(float inZoomIncrease)
-{
-	if ((zoomFactor + inZoomIncrease) >= 6 && (zoomFactor + inZoomIncrease) <= 20) {
-		zoomFactor += inZoomIncrease;
-	}
-	perspectiveSetup();
-
-}
-void View::decreaseZoomFactor(float inZoomDecrease)
-{
-	if ((zoomFactor + inZoomDecrease) >= 6 && (zoomFactor + inZoomDecrease) <= 20) {
-		zoomFactor += inZoomDecrease;
-	}
-	perspectiveSetup();
-}
-
-void View::changeXScreenLoc(float inXScreenLoc)
-{
-	if ((xScreenLoc + inXScreenLoc) > -50 && (xScreenLoc + inXScreenLoc) < 50)
-	{
-		xScreenLoc += inXScreenLoc;
-	}
-
-}
-void View::changeYScreenLoc(float inYScreenLoc)
-{
-	if ((yScreenLoc + inYScreenLoc) < -20 && (yScreenLoc + inYScreenLoc) > -80)
-	{
-		yScreenLoc += inYScreenLoc;
-	}
-}
-
-// Determine dependencies for the topological graph sort
-void View::TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites)
-{
-	std::vector<std::shared_ptr<Sprite>> tmpSprites;
-	int test = 0;
-	for (int a = 0; a < nSprites.size(); a++)
-	{
-
-		nSprites[a]->clearSpriteBehind();
-		if (nSprites[a]->getIsoLocation().getZ() >= 2)
-		{
-			tmpSprites.push_back(std::shared_ptr<Sprite>(nSprites[a]));
-
-		}
-		else
-		{
-			nSprites[a]->setIsoDepth(0);
-		}
-
-	}
-	int behindIndex;
-	const int isoSpritesLength = tmpSprites.size();
-	for (int i = 0; i < isoSpritesLength; ++i)
-	{
-
-		Sprite& a = *tmpSprites[i];
-		behindIndex = 0;
-
-		for (int j = 0; j < isoSpritesLength; ++j)
-		{
-			if (i != j)
-			{
-				Sprite& b = *tmpSprites[j];
-
-				if (b.getIsoLocation().getX() == 41 && b.getIsoLocation().getY() == 63)
-				{
-					int trap = 1;
-				}
-				if (b.getMin().getX() < a.getMax().getX() && b.getMin().getY() < a.getMax().getY() && b.getMin().getZ() <= a.getMax().getZ())
-				{
-					if (b.getMin().getZ() == a.getMax().getZ() && (b.getMax().getY() > a.getMax().getX()))
-						continue;
-					a.addSpriteBehind(tmpSprites[j]);
-				}
-			}
-		}
-
-		a.setIsoVisitedFlag(false);
-	}
-	int depthTest = 1;
-	for (int i = 0; i < tmpSprites.size(); ++i)
-	{
-		tmpSprites[i]->visitNode(depthTest);
-	}
-
-}
 
 View::~View()
 {

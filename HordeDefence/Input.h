@@ -51,7 +51,7 @@ public:
 
 	void mouseScroll_callbackImpl(GLFWwindow* window, double up, double down)
 	{
-		mView->increaseZoomFactor(down);
+		//mView->increaseZoomFactor(down);
 	}
 
 	static void mouseClick_callback(GLFWwindow * window, int button, int action, int mods)

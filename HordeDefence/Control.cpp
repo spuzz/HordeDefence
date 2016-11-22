@@ -12,7 +12,8 @@ Control::Control(shared_ptr<Model>& nModel, shared_ptr<View>& nView)
 	InitGlfwWindow();
 	SetupInput();
 
-	mView->setupGL(window);
+	//mView->setupGL(window);
+	mView->loadMenu(Views::GAMEUI, shared_ptr<GLFWwindow>(window), mModel);
 	worldCreation newWorld(mModel, mView);
 	while (!glfwWindowShouldClose(window))
 	{
@@ -38,8 +39,8 @@ void Control::InitGlfwWindow()
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	//window = glfwCreateWindow(mode->width, mode->height, "Horde Defence", glfwGetPrimaryMonitor(), NULL);
-	window = glfwCreateWindow(1980, 1280, "Horde Defence", NULL, NULL);
+	window = glfwCreateWindow(mode->width, mode->height, "Horde Defence", glfwGetPrimaryMonitor(), NULL);
+	//window = glfwCreateWindow(1980, 1280, "Horde Defence", NULL, NULL);
 	glfwSetWindowPos(window, 0, 25);
 	if (!window)
 	{
