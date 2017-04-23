@@ -3,12 +3,14 @@
 #include "Model.h"
 #include "View.h"
 #include <memory>
+#include "GameMath.h"
+
 
 using std::shared_ptr;
 class worldCreation
 {
 public:
-	worldCreation(shared_ptr<Model> inModel, shared_ptr<View> inView);
+	worldCreation(Model* inModel);
 	virtual ~worldCreation();
 };
 

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Sprite.h"
+#include "GameObject.h"
 
-class Tile : public Sprite
+class Tile : public GameObject
 {
 public:
 	Tile();
 	Tile(int inID,int inxLoc,int inyLoc, int inWidth, int inHeight,bool inWalkable);
-	Tile(int inID, Vect location, int inWidth, int inHeight,bool inWalkable);
+	Tile(int inID, Vector3D location, int inWidth, int inHeight,bool inWalkable);
 	virtual ~Tile();
 
 	int const getID(void) const { return mID; }
@@ -33,10 +33,15 @@ public:
 	void setTileRow(int n_tileset_row) { tileset_row = n_tileset_row; }
 	void setTileCol(int n_tileset_col) { tileset_col = n_tileset_col; }
 
-
+	bool isWalkable() { return mWalkable; }
 
 	void draw(const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc, textureLoader& txtrLoader);
 
+	bool collide(const GameMath::Circle& circle);
+	bool collide(const GameMath::Rectangle& rect);
+	bool collide(const GameMath::Vector3D& point);
+
+	void update(float nSeconds) {};
 protected:
 	int mapWidth, mapHeight;
 
@@ -44,6 +49,7 @@ protected:
 	float tileset_row, tileset_col;
 	int tileSetId;
 
+	GameMath::Rectangle mBoundingBox;
 private:
 	int mID, mWidth, mHeight;
 	bool mWalkable;

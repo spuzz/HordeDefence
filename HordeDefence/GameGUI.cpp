@@ -1,7 +1,7 @@
 #include "GameGUI.h"
 #include "Control.h"
 
-bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b) {
+bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b) {
 	return (a->getIsoDepth() < b->getIsoDepth());
 }
 
@@ -12,7 +12,7 @@ GameGUI::GameGUI()
 	m_xScreenLoc = 0;
 	m_yScreenLoc = -40;
 	m_zScreenLoc = -220;
-	m_viewZoomFactor = 55.0f;
+	m_viewZoomFactor = 155.0f;
 	m_yIncreasing = 0;
 	m_xIncreasing = 0;
 }
@@ -30,12 +30,12 @@ void GameGUI::update()
 
 	glBindTexture(GL_TEXTURE_2D, m_texture[0]);
 	GLuint currentTxtr = 0;
-	std::vector<std::shared_ptr<Sprite>>::iterator& it = m_model->getSprites().begin();
-	std::vector<std::shared_ptr<Sprite>>& sprites = m_model->getSprites();
-	TopologicalGraphSort(sprites);
-	std::sort(sprites.begin(), sprites.end(), comparator);
+	std::vector<std::shared_ptr<GameObject>>::iterator& it = m_model->getGameObjects().begin();
+	std::vector<std::shared_ptr<GameObject>>& GameObjects = m_model->getGameObjects();
+	TopologicalGraphSort(GameObjects);
+	std::sort(GameObjects.begin(), GameObjects.end(), comparator);
 	int count = 0;
-	for (it = sprites.begin(); it != sprites.end(); ++it)
+	for (it = GameObjects.begin(); it != GameObjects.end(); ++it)
 	{
 		if (count == 0)
 		{
@@ -129,6 +129,7 @@ bool GameGUI::toggleGameMenu(int n_bActivate)
 		button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 			glm::vec4(0.41f, 0.37f, 0.18f, 0.05f), glm::vec4(0.0f), "Settings"));
 		button->setText("Settings");
+		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&Control::Settings, &(*m_Control)));
 
 		button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 			glm::vec4(0.41f, 0.42f, 0.18f, 0.05f), glm::vec4(0.0f), "Load"));
@@ -141,6 +142,7 @@ bool GameGUI::toggleGameMenu(int n_bActivate)
 		button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 			glm::vec4(0.41f, 0.52f, 0.18f, 0.05f), glm::vec4(0.0f), "QuitToMain"));
 		button->setText("Quit To Main Menu");
+		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&Control::mainMenu, &(*m_Control)));
 
 		button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 			glm::vec4(0.41f, 0.57f, 0.18f, 0.05f), glm::vec4(0.0f), "QuitToDesktop"));
@@ -258,48 +260,49 @@ void GameGUI::perspectiveGL(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdo
 }
 
 // Determine dependencies for the topological graph sort
-void GameGUI::TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites)
+void GameGUI::TopologicalGraphSort(std::vector<std::shared_ptr<GameObject>>& nGameObjects)
 {
-	std::vector<std::shared_ptr<Sprite>> tmpSprites;
-	int test = 0;
-	for (int a = 0; a < nSprites.size(); a++)
+	std::vector<std::shared_ptr<GameObject>> tmpGameObjects;
+	int test = nGameObjects.size();
+	for (int a = 0; a < nGameObjects.size(); a++)
 	{
+		
 
-		nSprites[a]->clearSpriteBehind();
-		if (nSprites[a]->getIsoLocation().getZ() >= 2)
+		nGameObjects[a]->clearGameObjectBehind();
+		if (nGameObjects[a]->getZHeight() >= 2)
 		{
-			tmpSprites.push_back(std::shared_ptr<Sprite>(nSprites[a]));
+			tmpGameObjects.push_back(std::shared_ptr<GameObject>(nGameObjects[a]));
 
 		}
 		else
 		{
-			nSprites[a]->setIsoDepth(0);
+			nGameObjects[a]->setIsoDepth(0);
 		}
 
 	}
 	int behindIndex;
-	const int isoSpritesLength = tmpSprites.size();
-	for (int i = 0; i < isoSpritesLength; ++i)
+	const int isoGameObjectsLength = tmpGameObjects.size();
+	for (int i = 0; i < isoGameObjectsLength; ++i)
 	{
 
-		Sprite& a = *tmpSprites[i];
+		GameObject& a = *tmpGameObjects[i];
 		behindIndex = 0;
 
-		for (int j = 0; j < isoSpritesLength; ++j)
+		for (int j = 0; j < isoGameObjectsLength; ++j)
 		{
 			if (i != j)
 			{
-				Sprite& b = *tmpSprites[j];
+				GameObject& b = *tmpGameObjects[j];
 
-				if (b.getIsoLocation().getX() == 41 && b.getIsoLocation().getY() == 63)
+				if (b.getIsoLocation().x== 41 && b.getIsoLocation().y == 63)
 				{
 					int trap = 1;
 				}
-				if (b.getMin().getX() < a.getMax().getX() && b.getMin().getY() < a.getMax().getY() && b.getMin().getZ() <= a.getMax().getZ())
+				if (b.getMin().x < a.getMax().x && b.getMin().y < a.getMax().y && b.getMin().z <= a.getMax().z)
 				{
-					if (b.getMin().getZ() == a.getMax().getZ() && (b.getMax().getY() > a.getMax().getX()))
+					if (b.getMin().z == a.getMax().z && (b.getMax().y > a.getMax().x))
 						continue;
-					a.addSpriteBehind(tmpSprites[j]);
+					a.addGameObjectBehind(tmpGameObjects[j]);
 				}
 			}
 		}
@@ -307,44 +310,14 @@ void GameGUI::TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprite
 		a.setIsoVisitedFlag(false);
 	}
 	int depthTest = 1;
-	for (int i = 0; i < tmpSprites.size(); ++i)
+	for (int i = 0; i < tmpGameObjects.size(); ++i)
 	{
-		tmpSprites[i]->visitNode(depthTest);
+		tmpGameObjects[i]->visitNode(depthTest);
 	}
 
 }
 
-void GameGUI::increaseZoomFactor(float inZoomIncrease)
-{
-	if ((m_zoomFactor + inZoomIncrease) >= 6 && (m_zoomFactor + inZoomIncrease) <= 20) {
-		m_zoomFactor += inZoomIncrease;
-	}
-	perspectiveSetup();
 
-}
-void GameGUI::decreaseZoomFactor(float inZoomDecrease)
-{
-	if ((m_zoomFactor + inZoomDecrease) >= 6 && (m_zoomFactor + inZoomDecrease) <= 20) {
-		m_zoomFactor += inZoomDecrease;
-	}
-	perspectiveSetup();
-}
-
-void GameGUI::changeXScreenLoc(float inXScreenLoc)
-{
-	if ((m_xScreenLoc + inXScreenLoc) > -50 && (m_xScreenLoc + inXScreenLoc) < 50)
-	{
-		m_xScreenLoc += inXScreenLoc;
-	}
-
-}
-void GameGUI::changeYScreenLoc(float inYScreenLoc)
-{
-	if ((m_yScreenLoc + inYScreenLoc) < -20 && (m_yScreenLoc + inYScreenLoc) > -80)
-	{
-		m_yScreenLoc += inYScreenLoc;
-	}
-}
 
 bool GameGUI::checkScreenMoveKey(int key, int action)
 {
@@ -404,3 +377,4 @@ bool GameGUI::checkScreenMoveKey(int key, int action)
 GameGUI::~GameGUI()
 {
 }
+ 

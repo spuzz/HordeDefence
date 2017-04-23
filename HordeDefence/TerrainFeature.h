@@ -1,7 +1,7 @@
 #pragma once
 #include "Tile.h"
 class TerrainFeature :
-	public Sprite
+	public GameObject
 {
 public:
 	TerrainFeature();

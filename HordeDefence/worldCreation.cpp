@@ -1,7 +1,7 @@
 #include "worldCreation.h"
 
 
-worldCreation::worldCreation(shared_ptr<Model> inModel, shared_ptr<View> inView)
+worldCreation::worldCreation(Model* inModel)
 {
 	std::shared_ptr<Tmx::Map> map = inModel->getTmxMap();
 	float width = map->GetWidth();
@@ -23,8 +23,14 @@ worldCreation::worldCreation(shared_ptr<Model> inModel, shared_ptr<View> inView)
 				tileCount++;
 				float tileset_col = (gid % widthInTiles);
 				float tileset_row = gid / widthInTiles;
-				Tile tile(tileCount, Vect(79 -x,79 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), 0);
-				tile.SetTexture(inView->getTextureLoader()->retrieveMapTexture());
+				if (x == 52 && y == 35)
+				{
+
+					int trap = 0;
+				}
+				int walkable = map->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
+				Tile tile(tileCount, GameMath::Vector3D(79 -x,79 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), walkable);
+				//tile.SetTexture(inView->getTextureLoader()->retrieveMapTexture());
 				tile.setWidthInTiles(widthInTiles);
 				tile.setHeightInTiles(heightInTiles);
 				tile.setTileRow(tileset_row);
@@ -32,7 +38,7 @@ worldCreation::worldCreation(shared_ptr<Model> inModel, shared_ptr<View> inView)
 
 				tile.setMapWidth(width);
 				tile.setMapHeight(height);
-				tile.setAABBModelSpace(Vect(-1, -1, 0), Vect(1, 1, 0));
+				tile.setAABBModelSpace(Vector3D(-1, -1, 0), Vector3D(1, 1, 0));
 				tile.calcAABBWorldSpace();
 				tile.SetTilesetID(tileTest.tilesetId);
 				

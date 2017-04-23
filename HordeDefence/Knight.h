@@ -4,7 +4,7 @@ class Knight :
 	public Unit
 {
 public:
-	Knight(shared_ptr<gridVector> inAstarMap, float inMovement = -1.0f, float maxHealth = -1.0f, float inCurrentHealth = -1.0f, Vect inLocation = Vect(-1.0f, -1.0f, 0.0f),
+	Knight(shared_ptr<gridVector> inAstarMap, float inMovement = -1.0f, float maxHealth = -1.0f, float inCurrentHealth = -1.0f, Vector3D inLocation = Vector3D(-1.0f, -1.0f, 0.0f),
 		bool inGender = 0);
 	
 

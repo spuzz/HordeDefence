@@ -11,17 +11,18 @@ void Animation::setAnimation(string inName, float inSpeed)
 	if (mAnimations.find(inName) != mAnimations.end()) {
 		setCurrentAnimFrame(mAnimations[inName].first);
 		mCurrentAnimation = inName;
+		mAnimLength = mAnimations[mCurrentAnimation].second;
 		if (inSpeed != -1) {
 			setSpeed(inSpeed);
 		}
 	}
 }
 
-void Animation::update()
+void Animation::update(const float& nSeconds)
 {
 
 	if (updatable == true) {
-		mCurrentAnimFrame += 1.0f*mAnimSpeed/5;
+		mCurrentAnimFrame += nSeconds*(mAnimLength / mAnimSpeed);
 		if (mCurrentAnimFrame >= (mAnimations[mCurrentAnimation].first + mAnimations[mCurrentAnimation].second)) {
 			mCurrentAnimFrame = mAnimations[mCurrentAnimation].first;
 		}

@@ -2,27 +2,50 @@
 #include <map>
 #include "Tile.h"
 #include "Unit.h"
+#include "HumanCharacter.h"
 #include <memory>
 #include "TmxLoader\Tmx.h"
 #include "textureLoader.h"
+#include "UnitType.h"
+#include "GameMath.h"
+#include "Collision.h"
+
 using std::map;
+
+
+
 class Model
 {
 public:
+	typedef map<int, shared_ptr<Unit>> UnitMap;
+	typedef map<int, shared_ptr<GameObject>> GameObjectMap;
 	Model();
 	virtual ~Model();
 
-	void addTile(Tile inTile) { mTiles.insert(pair<int, Tile>(inTile.getID(), inTile)); mSprites.push_back(std::shared_ptr<Sprite>(&mTiles[inTile.getID()])); }
-	map<int, Tile>& getTiles(void) { return mTiles; }
+	
+	shared_ptr<Tile> getTile(int x, int y);
+	map<std::pair< int, int >, shared_ptr<Tile>>& getTiles(void) { return mTiles; }
 
-	void addPlayerUnit(std::shared_ptr<Unit> inUnit) { mPlayerUnits.push_back(inUnit); mSprites.push_back(std::shared_ptr<Sprite>(&*inUnit)); }
+	void addTile(Tile inTile);
+	void addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit);
+	void addHumanCharacter(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType, const string& nWeapon, const string& nArmor, const string& nOffhand, const int& isPlayerUnit);
+	void addBasicUnit(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType, const int& isPlayerUnit);
+	void addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth);
+	void deleteUnit(int nUnitID);
 
-	virtual void update();
+	virtual void update(float nSeconds);
 	void actionOnLocation(float x, float y);
+	void selectOnLocation(float x, float y);
+	void selectOnLocation(GameMath::Rectangle rect);
+	void ParseUnitXml(const string& inFileName);
 
-	std::vector<std::shared_ptr<Unit>>& getPlayerUnits() { return mPlayerUnits; }
+	std::map<int, std::shared_ptr<Unit>>& getPlayerUnits() { return mPlayerUnits; }
 
-	std::vector < std::shared_ptr<Sprite>>& getSprites() { return mSprites; }
+	std::vector<std::shared_ptr<GameObject>>& getGameObjects() { return mGameObjects; }
+
+	std::map<int, std::shared_ptr<Unit>>& getAllUnits() { return mAllUnits; }
+
+	std::map<int, std::shared_ptr<Unit>>& getAIUnits() { return mAIUnits; }
 
 	std::shared_ptr<Tmx::Map> getTmxMap() { return tmxMap; }
 
@@ -32,8 +55,20 @@ private:
 
 	void createMap();
 	std::shared_ptr<Tmx::Map> tmxMap;
-	map<int, Tile> mTiles;
-	std::vector<std::shared_ptr<Unit>> mPlayerUnits;
-	std::vector < std::shared_ptr<Sprite>> mSprites;
+	map < std::pair< int, int >, shared_ptr<Tile> > mTiles;
+	std::map<int, std::shared_ptr<Unit>> mPlayerUnits;
+	std::map<int, std::shared_ptr<Unit>> mAIUnits;
+	std::map<int, std::shared_ptr<Unit>> mAllUnits;
+	std::map<int, std::shared_ptr<Unit>> mSelectedUnits;
+	std::vector<std::shared_ptr<GameObject>> mGameObjects;
+	std::vector<shared_ptr<UnitType>> mUnitTypes;
+
+	int mGameObjectID;
+
+	// delta time 
+	double currentTime;
+
+	// System modules
+	std::shared_ptr<Collision> mCollisionSytem;
 };
 

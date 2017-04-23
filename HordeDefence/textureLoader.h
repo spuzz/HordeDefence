@@ -21,6 +21,7 @@ public:
 	int LoadGLTextures();
 	std::vector<GLuint> retrieveMapTexture() { return  mapTexture; }
 	std::vector<GLuint> retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand) const;
+	std::vector<GLuint> retrieveUnitTexture(string race, bool gender) const;
 	virtual void setCurrentTexture(const GLuint& nTxtr) { mCurrentTexture = nTxtr; }
 	virtual const GLuint& getCurrentTexture() { return mCurrentTexture;  }
 	virtual ~textureLoader();

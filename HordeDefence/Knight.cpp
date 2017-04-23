@@ -1,14 +1,14 @@
 #include "Knight.h"
 
 
-Knight::Knight(shared_ptr<gridVector> inAstarMap,float inMovement, float inMaxHealth, float inCurrentHealth, Vect inLocation, bool inGender) : Unit(inAstarMap, inLocation)
+Knight::Knight(shared_ptr<gridVector> inAstarMap,float inMovement, float inMaxHealth, float inCurrentHealth, Vector3D inLocation, bool inGender) : Unit(inAstarMap, inLocation,UnitType(),0)
 {
 	
 	inMovement == -1 ? setMovement(1) : setMovement(inMovement);
 	inMaxHealth == -1 ? setMaxHealth(100) : setMaxHealth(inMaxHealth);
 	inCurrentHealth == -1 ? setCurrentHealth(100) : setCurrentHealth(inCurrentHealth);
 	
-	setTarget(pair<float,float>(-1, -1));
+	setTarget(Vector3D(-1, -1, 0));
 	setGender(inGender);
 	setAttackSpeed(0.5);
 	setMovement(0.05);
@@ -78,13 +78,13 @@ void Knight::update()
 		getAnimation()->setAnimation(animation, animSpeed);
 		setStatusChanged(false);
 	}
-	getAnimation()->update();
+	getAnimation()->update(1);
 }
 
 void Knight::move()
 {
 	findDirection();
-	setIsoLocation(Vect(getIsoLocation().getX() + (getMovement()*mXDirMod), getIsoLocation().getY()+ (getMovement()*mYDirMod), getIsoLocation().getZ()));
+	setIsoLocation(Vector3D(getIsoLocation().x + (getMovement()*mXDirMod), getIsoLocation().y+ (getMovement()*mYDirMod), getIsoLocation().z));
 }
 
 void Knight::dying()

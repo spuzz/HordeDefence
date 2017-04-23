@@ -6,12 +6,15 @@
 #include <CEGUI\RendererModules\OpenGL\GL3Renderer.h>
 #include "Control.h"
 #include "GameGUI.h"
+#include "MainMenuGUI.h"
+#include "LoadingScreen.h"
+#include "SettingsGUI.h"
 
 using std::shared_ptr;
 using std::make_shared;
 
 
-//bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b) {
+//bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b) {
 //	return (a->getIsoDepth() < b->getIsoDepth());
 //}
 
@@ -19,16 +22,16 @@ using std::make_shared;
 View::View()
 {
 	
-	scale = 32;
-	zoomFactor = 9;
-	xScreenLoc = 0;
-	yScreenLoc = -40;
-	zScreenLoc = -220;
-	viewZoomFactor = 55.0f;
-	yIncreasing = 0;
-	xIncreasing = 0;
-	animTest = 0;
-	animTimer = 0;
+	//scale = 32;
+	//zoomFactor = 9;
+	//xScreenLoc = 0;
+	//yScreenLoc = -40;
+	//zScreenLoc = -220;
+	//viewZoomFactor = 55.0f;
+	//yIncreasing = 0;
+	//xIncreasing = 0;
+	//animTest = 0;
+	//animTimer = 0;
 }
 
 void View::setupGL(GLFWwindow* window)
@@ -84,12 +87,12 @@ void View::draw(GLFWwindow* window, Model &model)
 
 	//glBindTexture(GL_TEXTURE_2D, texture[0]);
 	//GLuint currentTxtr = 0;
-	//std::vector<std::shared_ptr<Sprite>>::iterator& it = model.getSprites().begin();
-	//std::vector<std::shared_ptr<Sprite>>& sprites = model.getSprites();
-	//TopologicalGraphSort(sprites);
-	//std::sort(sprites.begin(), sprites.end(),comparator);
+	//std::vector<std::shared_ptr<GameObject>>::iterator& it = model.getGameObjects().begin();
+	//std::vector<std::shared_ptr<GameObject>>& GameObjects = model.getGameObjects();
+	//TopologicalGraphSort(GameObjects);
+	//std::sort(GameObjects.begin(), GameObjects.end(),comparator);
 	//int count = 0;
-	//for (it = sprites.begin(); it != sprites.end(); ++it)
+	//for (it = GameObjects.begin(); it != GameObjects.end(); ++it)
 	//{
 	//	if (count == 0) 
 	//	{
@@ -121,12 +124,15 @@ void View::perspectiveGL(GLdouble fovY, GLdouble aspect, GLdouble zNear, GLdoubl
 }
 
 
-bool View::loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model)
+bool View::loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model, const bool& closeCurrent)
 {
 
-	if (m_gui)
+	if (closeCurrent && m_guiList.size() > 1)
 	{
-		m_gui->close();
+		
+		m_guiList[(m_guiList.size() - 1)]->close();
+		m_guiList[(m_guiList.size() - 1)].reset();
+		m_guiList.pop_back();
 	}
 	txtrLoader = shared_ptr<textureLoader>(new textureLoader());
 	if (!txtrLoader->LoadGLTextures())								// Jump To Texture Loading Routine
@@ -135,18 +141,45 @@ bool View::loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared
 		exit(0);									// If Texture Didn't Load Return FALSE
 	}
 	
+	switch(n_view)
+	{
+	case GAMEUI:
+		m_gui = shared_ptr<GUI>(new GameGUI());	
+		break;
+	case MAINMENU:
+		m_gui = shared_ptr<GUI>(new MainMenuGUI());
+		break;
+	case LOADING:
+		m_gui = shared_ptr<GUI>(new LoadingScreen());
+		break;
+	case SETTINGS:
+		m_gui = shared_ptr<GUI>(new SettingsGUI());
+		break;
+	}
 	
-	m_gui = shared_ptr<GUI>(new GameGUI());
 	m_gui->setTextureLoader(txtrLoader);
 	m_gui->setControl(m_Control);
 	m_gui->setWindow(n_window);
 	m_gui->setModel(n_model);
 	m_gui->loadGUI();
 	m_gui->start();
+	m_guiList.push_back(m_gui);
 	return true;
 }
 
+bool View::goBack()
+{
+	if (m_guiList.size() > 1)
+	{
+		m_guiList[(m_guiList.size() - 1)]->close();
+		m_guiList[(m_guiList.size() - 1)].reset();
+		m_guiList.pop_back();
+		m_gui = shared_ptr<GUI>(m_guiList[(m_guiList.size() - 1)]);
+		return true;
+	}
 
+	return false;
+}
 // return false if no action was taken
 bool View::keyAction(int key, int scancode, int action)
 {

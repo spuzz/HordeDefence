@@ -39,24 +39,29 @@ int textureLoader::LoadGLTextures()									// Load Bitmaps And Convert To Textu
 void textureLoader::loadUnits() 
 {
 	std::vector<std::string> list;
-	int count = GetFileList("C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Units\\Male\\Human\\*.png", list);
+	int count = GetFileList("..\\HordeDefenceArt\\Units\\Male\\Human\\*.png", list);
 	string fileLocation;
 	for (int i = 0; i < list.size(); i++) {
-		fileLocation = "C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Units\\Male\\Human\\" + list[i];
+		fileLocation = "..\\HordeDefenceArt\\Units\\Male\\Human\\" + list[i];
 		string delim = ".";
 		string token = list[i].substr(0,list[i].find(delim));
 		createTexture(unitTextures,token , fileLocation);
 	}
+	createTexture(unitTextures, "Orc", "..\\HordeDefenceArt\\Units\\Male\\Orc\\Orc.png");
+	createTexture(unitTextures, "Skeleton", "..\\HordeDefenceArt\\Units\\Male\\Skeleton\\Skeleton.png");
+	createTexture(unitTextures, "Zombie", "..\\HordeDefenceArt\\Units\\Male\\Zombie\\Zombie.png");
+	createTexture(unitTextures, "Teleporter", "..\\HordeDefenceArt\\Units\\Teleporter\\EnemyGoal\\teleporter-effect-var-4.png");
+	createTexture(unitTextures, "SpawnPoint", "..\\HordeDefenceArt\\Units\\Teleporter\\Spawn\\teleporter-effect-var-2.png");
 }
 
 void textureLoader::loadMaps()
 {
 
 	std::vector<std::string> list;
-	int count = GetFileList("C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Maps\\*.png", list);
+	int count = GetFileList("..\\HordeDefenceArt\\Maps\\*.png", list);
 	string mapFileLocation;
 	for (int i = 0; i < list.size(); i++) {
-		mapFileLocation = "C:\\GameDev\\HordeDefence\\HordeDefenceArt\\Maps\\" + list[i];
+		mapFileLocation = "..\\HordeDefenceArt\\Maps\\" + list[i];
 		createTexture(mapTexture, i,mapFileLocation);
 	}
 	
@@ -125,12 +130,23 @@ int textureLoader::GetFileList(const char *searchkey, std::vector<std::string> &
 std::vector<GLuint> textureLoader::retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand) const
 {
 	std::vector<GLuint> retreivedTxtrs;
-	retreivedTxtrs.push_back(unitTextures.at(offhand));
+	if (offhand != "")
+	{
+		retreivedTxtrs.push_back(unitTextures.at(offhand));
+	}
+	
 	retreivedTxtrs.push_back(unitTextures.at("male_head1"));
 	if (armor == "steel") { armor = "steel_armor"; }
 	retreivedTxtrs.push_back(unitTextures.at(armor));
 	if (weapon == "sword") { weapon = "shortsword"; }
 	retreivedTxtrs.push_back(unitTextures.at(weapon));
+	return retreivedTxtrs;
+}
+
+std::vector<GLuint> textureLoader::retrieveUnitTexture(string race, bool gender) const
+{
+	std::vector<GLuint> retreivedTxtrs;
+	retreivedTxtrs.push_back(unitTextures.at(race));
 	return retreivedTxtrs;
 }
 

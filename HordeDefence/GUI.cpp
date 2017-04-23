@@ -2,6 +2,20 @@
 #include "Control.h"
 CEGUI::OpenGL3Renderer* GUI::m_renderer = nullptr;
 
+GUI::GUI()
+{
+
+}
+GUI::~GUI()
+{
+
+
+	m_Control.reset();
+
+	m_model.reset();
+	m_window.reset();
+	m_txtrLoader.reset();
+}
 void GUI::init(const std::string& resourceDirectory) {
 	// Check if the renderer and system were not already initialized
 	if (m_renderer == nullptr) {
@@ -118,4 +132,36 @@ CEGUI::MouseButton GUI::GlfwToCeguiButton(int glfwButton)
 void GUI::setControl(shared_ptr<Control> n_ctrl)
 {
 	m_Control = shared_ptr<Control>(n_ctrl);
+}
+
+void GUI::increaseZoomFactor(float inZoomIncrease)
+{
+	if ((m_zoomFactor + inZoomIncrease) >= 6 && (m_zoomFactor + inZoomIncrease) <= 20) {
+		m_zoomFactor += inZoomIncrease;
+	}
+	perspectiveSetup();
+
+}
+void GUI::decreaseZoomFactor(float inZoomDecrease)
+{
+	if ((m_zoomFactor + inZoomDecrease) >= 6 && (m_zoomFactor + inZoomDecrease) <= 20) {
+		m_zoomFactor += inZoomDecrease;
+	}
+	perspectiveSetup();
+}
+
+void GUI::changeXScreenLoc(float inXScreenLoc)
+{
+	if ((m_xScreenLoc + inXScreenLoc) > -50 && (m_xScreenLoc + inXScreenLoc) < 50)
+	{
+		m_xScreenLoc += inXScreenLoc;
+	}
+
+}
+void GUI::changeYScreenLoc(float inYScreenLoc)
+{
+	if ((m_yScreenLoc + inYScreenLoc) < -20 && (m_yScreenLoc + inYScreenLoc) > -80)
+	{
+		m_yScreenLoc += inYScreenLoc;
+	}
 }

@@ -13,7 +13,8 @@ enum Views
 {
 	MAINMENU,
 	GAMEUI,
-	SETTING
+	SETTINGS,
+	LOADING
 };
 
 
@@ -33,7 +34,8 @@ public:
 
 	bool mouseAction(int button, int action, int mods);
 
-	virtual bool loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model);
+	virtual bool loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared_ptr<Model> n_model, const bool& closeCurrent = true);
+	bool goBack();
 	//virtual bool toggleGameMenu(int n_bActivate);
 
 	bool View::onExitToDesktop(const CEGUI::EventArgs& e);
@@ -46,9 +48,9 @@ public:
 	const float getZoomFactor() const { return zoomFactor; }
 	const float getViewZoomFactor() const { return viewZoomFactor; }
 	
-	float getXScreenLoc() const{ return xScreenLoc; }
-	float getYScreenLoc() const{ return yScreenLoc; }
-	float getZScreenLoc() const{ return zScreenLoc; }
+	float getXScreenLoc() const{ return m_gui->getXScreenLoc(); }
+	float getYScreenLoc() const { return  m_gui->getYScreenLoc(); }
+	float getZScreenLoc() const { return  m_gui->getZScreenLoc(); }
 	void changeXScreenLoc(float inXScreenLoc);
 	void changeYScreenLoc(float inYScreenLoc);
 	void setYMovement(float inYMovement) { yIncreasing = inYMovement; }
@@ -57,13 +59,13 @@ public:
 	float getYMovement() { return yIncreasing; }
 
 	void setMouseCursor(double xPos, double yPos);
-	//bool comparator(const std::shared_ptr<Sprite> &a, const std::shared_ptr<Sprite> &b);
+	//bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b);
 	shared_ptr<textureLoader> getTextureLoader(void) { return txtrLoader;  }
 
 	void setControl(shared_ptr<Control> n_ctrl) { m_Control = shared_ptr<Control>(n_ctrl); }
 
 protected:
-	void TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites);
+	void TopologicalGraphSort(std::vector<std::shared_ptr<GameObject>>& nGameObjects);
 
 private:
 
@@ -85,7 +87,7 @@ private:
 	GLint  nOfColors;
 	int test;
 	shared_ptr<GUI> m_gui;
-
+	std::vector<shared_ptr<GUI>> m_guiList;
 	bool m_bMenuUp;
 	bool m_bBlockInput;
 };

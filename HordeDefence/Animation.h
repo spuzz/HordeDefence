@@ -12,7 +12,7 @@ public:
 
 	
 
-	virtual void update();
+	virtual void update(const float& nSeconds);
 	virtual void addAnimation(string name, int initialFrame, int frames) { mAnimations[name] = std::pair<int,int>(initialFrame,frames); }
 	virtual void removeAnimation(string name) { mAnimations.erase(mAnimations.find(name)); }
 
@@ -27,6 +27,7 @@ private:
 	float mCurrentAnimFrame;
 	string mCurrentAnimation;
 	float mAnimSpeed;
+	float mAnimLength;
 	bool updatable;
 };
 

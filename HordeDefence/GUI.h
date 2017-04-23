@@ -12,6 +12,8 @@ class Control;
 class GUI {
 public:
 
+	GUI();
+	~GUI();
 	// Abstract class, use method to load gui in subclass
 	virtual void loadGUI() = 0;
 
@@ -51,6 +53,20 @@ public:
 	void setWindow(std::shared_ptr<GLFWwindow> n_window) { m_window = std::shared_ptr<GLFWwindow>(n_window); }
 	void setTextureLoader(std::shared_ptr<textureLoader> n_loader) { m_txtrLoader = std::shared_ptr<textureLoader>(n_loader); }
 
+	// Getters and Setters
+	float getXScreenLoc() const { return m_xScreenLoc; }
+	float getYScreenLoc() const { return m_yScreenLoc; }
+	float getZScreenLoc() const { return m_zScreenLoc; }
+	void setZoomFactor(float inZoom) { if (inZoom >= 6 && inZoom <= 12) { m_zoomFactor = inZoom; } }
+	void increaseZoomFactor(float inZoomIncrease);
+	void decreaseZoomFactor(float inZoomDecrease);
+	void changeXScreenLoc(float inXScreenLoc);
+	void changeYScreenLoc(float inYScreenLoc);
+	void setYMovement(float inYMovement) { m_yIncreasing = inYMovement; }
+	void setXMovement(float inXMovement) { m_xIncreasing = inXMovement; }
+	float getXMovement() { return m_xIncreasing; }
+	float getYMovement() { return m_yIncreasing; }
+
 protected:
 	static CEGUI::OpenGL3Renderer* m_renderer;
 	CEGUI::GUIContext* m_context = nullptr;
@@ -63,4 +79,14 @@ protected:
 
 	std::vector<GLuint>	m_texture;			// Storage For 1 Texture
 	std::shared_ptr<textureLoader> m_txtrLoader;
+
+	int m_width, m_height;
+	float m_viewZoomFactor;
+	float m_zoomFactor;
+	float m_yScreenLoc;
+	float m_xScreenLoc;
+	float m_zScreenLoc;
+	float m_xIncreasing, m_yIncreasing;
+
+	virtual void perspectiveSetup() {};
 };

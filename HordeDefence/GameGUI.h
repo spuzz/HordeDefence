@@ -21,18 +21,9 @@ public:
 	bool quitCancel(const CEGUI::EventArgs& e);
 	bool onReturnToGame(const CEGUI::EventArgs& e);
 	bool checkScreenMoveKey(int key, int action);
-	void TopologicalGraphSort(std::vector<std::shared_ptr<Sprite>>& nSprites);
+	void TopologicalGraphSort(std::vector<std::shared_ptr<GameObject>>& nGameObjects);
 
-	// Getters and Setters
-	void setZoomFactor(float inZoom) { if (inZoom >= 6 && inZoom <= 12) { m_zoomFactor = inZoom; } }
-	void increaseZoomFactor(float inZoomIncrease);
-	void decreaseZoomFactor(float inZoomDecrease);
-	void changeXScreenLoc(float inXScreenLoc);
-	void changeYScreenLoc(float inYScreenLoc);
-	void setYMovement(float inYMovement) { m_yIncreasing = inYMovement; }
-	void setXMovement(float inXMovement) { m_xIncreasing = inXMovement; }
-	float getXMovement() { return m_xIncreasing; }
-	float getYMovement() { return m_yIncreasing; }
+
 
 private:
 	void loadGameGUI();
@@ -43,13 +34,7 @@ private:
 	bool m_bMenuUp;
 	bool m_bBlockInput;
 
-	int m_width,m_height;
-	float m_viewZoomFactor;
-	float m_zoomFactor;
-	float m_yScreenLoc;
-	float m_xScreenLoc;
-	float m_zScreenLoc;
-	float m_xIncreasing, m_yIncreasing;
+
 
 };
 

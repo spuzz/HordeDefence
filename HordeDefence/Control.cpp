@@ -1,6 +1,5 @@
 #include "Control.h"
-#include "Input.h"
-
+#include <chrono>
 
 
 Control::Control(shared_ptr<Model>& nModel, shared_ptr<View>& nView)
@@ -8,25 +7,42 @@ Control::Control(shared_ptr<Model>& nModel, shared_ptr<View>& nView)
 	mModel = shared_ptr<Model>(nModel);
 	mView = shared_ptr<View>(nView);
 	mView->setControl(shared_ptr<Control>(this));
-	
+
 	InitGlfwWindow();
 	SetupInput();
 
 	//mView->setupGL(window);
-	mView->loadMenu(Views::GAMEUI, shared_ptr<GLFWwindow>(window), mModel);
-	worldCreation newWorld(mModel, mView);
-	while (!glfwWindowShouldClose(window))
+	m_bNewScene = false;
+	m_bKeepLastScene = false;
+	mView->loadMenu(Views::GAMEUI, mWindow, mModel);
+
+	auto time = std::chrono::high_resolution_clock::now();
+	auto lastTime = time;
+	float tickTime = std::chrono::duration_cast<std::chrono::seconds>(time - lastTime).count();
+	while (!glfwWindowShouldClose(mWindow.get()))
 	{
-		if (m_bPause == false)
+
+		if (m_bNewScene == true)
 		{
-			mModel->update();
+			mView->loadMenu(m_newSceneType, mWindow, mModel,m_bKeepLastScene);
+			auto lastTime = std::chrono::high_resolution_clock::now();
+
+			m_bNewScene = false;
 		}
 
-		mView->draw(window,*mModel);
+		time = std::chrono::high_resolution_clock::now();
+		tickTime = std::chrono::duration_cast<std::chrono::milliseconds>(time - lastTime).count() / 1000.0f;
+		if (m_bPause == false)
+		{
+			mModel->update(tickTime);
+		}
+		lastTime = time;
+		mView->draw(mWindow.get(), *mModel);
 
 	}
 
 }
+
 
 void Control::InitGlfwWindow()
 {
@@ -39,32 +55,32 @@ void Control::InitGlfwWindow()
 	glfwWindowHint(GLFW_GREEN_BITS, mode->greenBits);
 	glfwWindowHint(GLFW_BLUE_BITS, mode->blueBits);
 	glfwWindowHint(GLFW_REFRESH_RATE, mode->refreshRate);
-	window = glfwCreateWindow(mode->width, mode->height, "Horde Defence", glfwGetPrimaryMonitor(), NULL);
+	mWindow = shared_ptr<GLFWwindow>(glfwCreateWindow(mode->width, mode->height, "Horde Defence", glfwGetPrimaryMonitor(), NULL));
 	//window = glfwCreateWindow(1980, 1280, "Horde Defence", NULL, NULL);
-	glfwSetWindowPos(window, 0, 25);
-	if (!window)
+	glfwSetWindowPos(mWindow.get(), 0, 25);
+	if (!mWindow.get())
 	{
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
 
-	glfwMakeContextCurrent(window);
+	glfwMakeContextCurrent(mWindow.get());
 	glfwSwapInterval(1);
 }
 
 void Control::SetupInput()
 {
-	Input &hexmap = Input::getInstance(); // initialize the singleton
-	hexmap.setView(mView);
-	hexmap.setModel(mModel);
-	hexmap.setControl(shared_ptr<Control>(this));
+	mHexmap = shared_ptr<Input>(&Input::getInstance()); // initialize the singleton
+	mHexmap->setView(mView);
+	mHexmap->setModel(mModel);
+	mHexmap->setControl(shared_ptr<Control>(this));
 
 	//The glfw callback is set up as follows:   
 	//glfwSetMouseButtonCallback(&Input::mouseButtonCallback); // specifying the static callbac
-	glfwSetKeyCallback(window, &Input::key_callback);
-	glfwSetScrollCallback(window, &Input::mouseScroll_callback);
-	glfwSetMouseButtonCallback(window, &Input::mouseClick_callback);
-	glfwSetCursorPosCallback(window, &Input::cursorPos_callback);
+	glfwSetKeyCallback(mWindow.get(), &Input::key_callback);
+	glfwSetScrollCallback(mWindow.get(), &Input::mouseScroll_callback);
+	glfwSetMouseButtonCallback(mWindow.get(), &Input::mouseClick_callback);
+	glfwSetCursorPosCallback(mWindow.get(), &Input::cursorPos_callback);
 }
 
 void Control::exitGame()
@@ -74,13 +90,43 @@ void Control::exitGame()
 
 bool Control::exitToDesktop(const CEGUI::EventArgs& e)
 {
-	glfwSetWindowShouldClose(window, GL_TRUE);
+	glfwSetWindowShouldClose(mWindow.get(), GL_TRUE);
 	return true;
 }
 
+void Control::mainMenu(const CEGUI::EventArgs& e)
+{
+	m_bKeepLastScene = false;
+	m_bNewScene = true;
+	m_newSceneType = MAINMENU;
+}
+
+void Control::NewGame(const CEGUI::EventArgs& e)
+{
+	m_bKeepLastScene = false;
+	m_bNewScene = true;
+	m_newSceneType = GAMEUI;
+}
+
+void Control::Settings(const CEGUI::EventArgs& e)
+{
+	m_bKeepLastScene = true;
+	m_bNewScene = true;
+	m_newSceneType = SETTINGS;
+	
+	
+}
+
+void Control::RemoveLastView(const CEGUI::EventArgs& e)
+{
+
+	mView->goBack();
+}
+
+
 Control::~Control()
 {
-	glfwDestroyWindow(window);
+	glfwDestroyWindow(mWindow.get());
 	glfwTerminate();
 	exit(EXIT_SUCCESS);
 }

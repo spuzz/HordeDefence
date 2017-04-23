@@ -62,8 +62,9 @@ public:
 
 	void mouseClick_callbackImpl(GLFWwindow * window, int button, int action, int mods)
 	{
-		mView->mouseAction(button,action,mods);
+		mView->mouseAction(button, action, mods);
 		if (action == GLFW_PRESS) {
+			
 			double x_pos, y_pos;
 			int width, height;
 			GLfloat winZ;
@@ -85,7 +86,17 @@ public:
 
 
 			pair<float, float> mouse2DPos = isoTo2D(pair<float, float>(H.x, H.y));
-			mModel->actionOnLocation(mouse2DPos.first, mouse2DPos.second);
+
+			if (button == GLFW_MOUSE_BUTTON_1)
+			{
+				mModel->selectOnLocation(mouse2DPos.first, mouse2DPos.second);
+			}
+			else if (button == GLFW_MOUSE_BUTTON_2)
+			{
+
+				mModel->actionOnLocation(mouse2DPos.first, mouse2DPos.second);
+			}
+
 		}
 
 	}
