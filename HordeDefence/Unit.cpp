@@ -16,6 +16,7 @@ Unit::Unit(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type
 	mBoundingBox.mLocation.z = 0;
 	mBoundingBox.mLocation.x = mIsoLocation.x;
 	mBoundingBox.mLocation.y = mIsoLocation.y;
+	calcScreenLocation();
 	//setLocation(Vector3D(getIsoLocation().x - getIsoLocation().y, (getIsoLocation().x + getIsoLocation().y) * 0.5, 0));
 	setAABBModelSpace(Vector3D(-2, -2, 0), Vector3D(2, 2, 1));
 	calcAABBWorldSpace();
@@ -118,6 +119,7 @@ void Unit::move(Vector3D nMoveVec)
 		setIsoLocation(nMoveVec);
 		mBoundingBox.mLocation.x = mIsoLocation.x;
 		mBoundingBox.mLocation.y = mIsoLocation.y;
+		calcScreenLocation();
 	}
 
 	//setLocation(Vector3D(getIsoLocation().x - getIsoLocation().y, (getIsoLocation().x + getIsoLocation().y) * 0.5, 0));
@@ -294,36 +296,47 @@ void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& z
 	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
 	calcAABBWorldSpace();
 	std::vector<GLuint> character = GetTextures(txtrLoader);
-
-	for (auto txtr : character) {
-		mIsoDepth;
+	double x = getIsoLocation().x - 0.5;
+	double y = getIsoLocation().y - 0.5;
+	
+	int dir = getDirection();
+	dir -= 1;
+	if (dir < 0) { dir = 7; }
+	if (mSelected)
+	{
 		glLoadIdentity();
 		glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
-		double x = getIsoLocation().x -0.5;
-		double y = getIsoLocation().y - 0.5;
-		glTranslatef(x - y, (x + y) * 0.5, 0);
-		int dir = getDirection();
-		dir -= 1;
-		if (dir < 0) { dir = 7; }
+		glTranslatef(mScreenLocation.x, mScreenLocation.y, 0);
+		int test = 0;
+		glDisable(GL_TEXTURE_2D);
+		glBegin(GL_LINE_LOOP);
+		for (int ii = 0; ii < 300; ii++)
+		{  
+			float theta = 2.0f * 3.1415926f * float(ii) / float(300);//get the current angle 
 
-		if (mSelected)
-		{
-			glDisable(GL_TEXTURE_2D);
-			glBegin(GL_LINE_LOOP);
-			for (int ii = 0; ii < 300; ii++)
-			{
-				float theta = 2.0f * 3.1415926f * float(ii) / float(300);//get the current angle 
-
-				float x = mBoundingBox.mRadius * cosf(theta);//calculate the x component 
-				float y = mBoundingBox.mRadius  * sinf(theta);//calculate the y component 
+			float x = mBoundingBox.mRadius * cosf(theta);//calculate the x component 
+			float y = mBoundingBox.mRadius  * sinf(theta);//calculate the y component 
 
 
-				glVertex3f(x - y, (x + y) * 0.5, 1.0f);//output vertex 
+			glVertex3f(mScreenLocation.x, mScreenLocation.y, 1.0f);//output vertex 
 
-			}
-			glEnd();
-			glEnable(GL_TEXTURE_2D);
 		}
+		glEnd();
+		
+		glEnable(GL_TEXTURE_2D);
+		
+	}
+
+	if (mSelected || mPlayer != 0)
+	{
+		drawUnitHealth(txtrLoader, x, y, xScreenLoc, yScreenLoc, zScreenLoc);
+	}
+	for (auto txtr : character) {
+		glLoadIdentity();
+		glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
+		glTranslatef(x - y, (x + y) * 0.5, 0);
+
+
 		glBindTexture(GL_TEXTURE_2D, txtr);
 		glBegin(GL_QUADS);
 		glNormal3f(0.0f, 0.0f, 1.0f);
@@ -335,6 +348,45 @@ void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& z
 		
 
 	}
+}
+
+void Unit::drawUnitHealth(textureLoader& txtrLoader,double x, double y, const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc)
+{
+	glLoadIdentity();
+	glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
+	glTranslatef(x - y, (x + y) * 0.5, 0);
+
+	glBindTexture(GL_TEXTURE_2D, txtrLoader.retrieveUnitTexture("HealthBarFrame", getGender())[0]);
+
+	glBegin(GL_QUADS);
+	glNormal3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(0.0f,1.0f); glVertex3f(-1.2f, 1.5f, 1.0f);
+	glTexCoord2f(1.0f ,1.0f); glVertex3f(1.2f, 1.5f, 1.0f);
+	glTexCoord2f(1.0f, 0.0f); glVertex3f(1.2f, 2.3, 1.0f);
+	glTexCoord2f(0.0f, 0.0f);  glVertex3f(-1.2f, 2.3, 1.0f);
+	glEnd();
+
+	float healthPerc = mCurrentHealth / mMaxHealth;
+	if (healthPerc < 0)
+	{
+		healthPerc = 0;
+	}
+	if (mPlayer == 0)
+	{
+		glBindTexture(GL_TEXTURE_2D, txtrLoader.retrieveUnitTexture("GreenHealthBar", getGender())[0]);
+	}
+	else
+	{
+		glBindTexture(GL_TEXTURE_2D, txtrLoader.retrieveUnitTexture("RedHealthBar", getGender())[0]);
+	}
+
+	glBegin(GL_QUADS);
+	glNormal3f(0.0f, 0.0f, 1.0f);
+	glTexCoord2f(0.0f, 1.0f); glVertex3f(-1.0f, 1.5f, 1.0f);
+	glTexCoord2f(1.0f * healthPerc, 1.0f); glVertex3f(-1.0f + (2 * healthPerc), 1.5f, 1.0f);
+	glTexCoord2f(1.0f * healthPerc, 0.0f); glVertex3f(-1.0f + (2 * healthPerc), 2.3f, 1.0f);
+	glTexCoord2f(0.0f, 0.0f);  glVertex3f(-1.0f, 2.3f, 1.0f);
+	glEnd();
 }
 
 std::vector<GLuint> Unit::GetTextures(textureLoader& txtrLoader)

@@ -62,10 +62,19 @@ public:
 
 	void mouseClick_callbackImpl(GLFWwindow * window, int button, int action, int mods)
 	{
+
 		mView->mouseAction(button, action, mods);
 		if (action == GLFW_PRESS) {
 			
+			glfwGetCursorPos(window, &mXMousePos, &mYMousePos);
+
+		}
+		else if(action == GLFW_RELEASE)
+		{
+
 			double x_pos, y_pos;
+			glfwGetCursorPos(window, &x_pos, &y_pos);
+
 			int width, height;
 			GLfloat winZ;
 			GLint viewport[4];                  // Where The Viewport Values Will Be Stored
@@ -75,7 +84,7 @@ public:
 			glGetDoublev(GL_MODELVIEW_MATRIX, modelview);       // Retrieve The Modelview Matrix
 			GLdouble projection[16];                // Where The 16 Doubles Of The Projection Matrix Are To Be Stored
 			glGetDoublev(GL_PROJECTION_MATRIX, projection);     // Retrieve The Projection Matrix
-			glfwGetCursorPos(window, &x_pos, &y_pos);
+			
 			glReadPixels(width / 2, height / 2, 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &winZ);
 			glm::mat4 test = glm::mat4(projection[0], projection[1], projection[2], projection[3], projection[4], projection[5], projection[6],
 				projection[7], projection[8], projection[9], projection[10], projection[11], projection[12], projection[13], projection[14], projection[15]);
@@ -83,20 +92,45 @@ public:
 			glm::mat4 F = glm::perspective(mView->getViewZoomFactor() / mView->getZoomFactor(), (GLfloat)width / (GLfloat)height, 0.1f, 350.0f);
 			//glm::mat4 G = glm::inverse(F * E);
 			glm::vec3 H = glm::unProject(glm::vec3(x_pos, height - y_pos, winZ), E, test, glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3]));
-
+			glm::vec3 H2 = glm::unProject(glm::vec3(mXMousePos, height - mYMousePos, winZ), E, test, glm::vec4(viewport[0], viewport[1], viewport[2], viewport[3]));
 
 			pair<float, float> mouse2DPos = isoTo2D(pair<float, float>(H.x, H.y));
 
 			if (button == GLFW_MOUSE_BUTTON_1)
 			{
-				mModel->selectOnLocation(mouse2DPos.first, mouse2DPos.second);
+				if (x_pos == mXMousePos && y_pos == mYMousePos)
+				{
+					mModel->selectOnLocation(mouse2DPos.first, mouse2DPos.second);
+				}
+				else
+				{
+					float lowerX, lowerY, rectWidth, rectHeight;
+					if (H.x < H2.x)
+					{
+						lowerX = H.x;
+					}
+					else
+					{
+						lowerX = H2.x;
+					}
+					if (H.y < H2.y)
+					{
+						lowerY = H.y;
+					}
+					else
+					{
+						lowerY = H2.y;
+					}
+					GameMath::Rectangle rect(Vector3D(lowerX, lowerY,0), abs(H.x - H2.x), abs(H.y - H2.y));
+					mModel->selectOnLocation(rect);
+				}
+				
 			}
 			else if (button == GLFW_MOUSE_BUTTON_2)
 			{
 
 				mModel->actionOnLocation(mouse2DPos.first, mouse2DPos.second);
 			}
-
 		}
 
 	}
@@ -156,4 +190,7 @@ private:
 	shared_ptr<Control> mControl;
 	Input(Input const&); // prevent copies
 	void operator=(Input const&); // prevent assignments
+
+	double mXMousePos;
+	double mYMousePos;
 };

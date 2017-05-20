@@ -6,6 +6,8 @@ worldCreation::worldCreation(Model* inModel)
 	std::shared_ptr<Tmx::Map> map = inModel->getTmxMap();
 	float width = map->GetWidth();
 	float height = map->GetHeight();
+	inModel->setMapHeight(height);
+	inModel->setMapWidth(width);
 	int tileCount = 0;
 	const Tmx::Tileset *set = map->GetTileset(0);
 	int widthInTiles = map->GetTileset(0)->GetImage()->GetWidth() / map->GetTileset(0)->GetTileWidth();
@@ -29,7 +31,7 @@ worldCreation::worldCreation(Model* inModel)
 					int trap = 0;
 				}
 				int walkable = map->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
-				Tile tile(tileCount, GameMath::Vector3D(79 -x,79 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), walkable);
+				Tile tile(tileCount, GameMath::Vector3D(width - 1 -x, height - 1 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), walkable);
 				//tile.SetTexture(inView->getTextureLoader()->retrieveMapTexture());
 				tile.setWidthInTiles(widthInTiles);
 				tile.setHeightInTiles(heightInTiles);

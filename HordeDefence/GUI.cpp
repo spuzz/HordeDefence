@@ -71,6 +71,11 @@ CEGUI::Window* GUI::createWidget(const std::string& type, const glm::vec4& destR
 	return newWindow;
 }
 
+CEGUI::Texture* GUI::createTexture(string texture)
+{
+	return &m_renderer->createTexture("MyCEGUITextureName");
+}
+
 void GUI::destroyWidget(const std::string& name) {
 	m_root->getChild(name)->destroy();
 }

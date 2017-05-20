@@ -37,6 +37,7 @@ public:
 	void actionOnLocation(float x, float y);
 	void selectOnLocation(float x, float y);
 	void selectOnLocation(GameMath::Rectangle rect);
+	void selectUnit(int unit);
 	void ParseUnitXml(const string& inFileName);
 
 	std::map<int, std::shared_ptr<Unit>>& getPlayerUnits() { return mPlayerUnits; }
@@ -47,8 +48,18 @@ public:
 
 	std::map<int, std::shared_ptr<Unit>>& getAIUnits() { return mAIUnits; }
 
+	std::map<int, std::shared_ptr<Unit>>& getSelectedUnits() { return mSelectedUnits; }
+
 	std::shared_ptr<Tmx::Map> getTmxMap() { return tmxMap; }
 
+	bool getSelectionChanged() { return mSelectionChanged; }
+	void setSelectionChanged(const bool& nSel) { mSelectionChanged = nSel;  }
+
+	void setMapWidth(int nMapWidth) { mMapWidth = nMapWidth; }
+	void setMapHeight(int nMapHeight) { mMapHeight = nMapHeight; }
+
+	int getMapWidth() { return mMapWidth; }
+	int getMapHeight() { return mMapHeight; }
 protected:
 	shared_ptr<gridVector> mAstarGrid;
 private:
@@ -63,8 +74,16 @@ private:
 	std::vector<std::shared_ptr<GameObject>> mGameObjects;
 	std::vector<shared_ptr<UnitType>> mUnitTypes;
 
+	int mMapWidth;
+	int mMapHeight;
+	// Game Object Counter
 	int mGameObjectID;
 
+	// stop actions on enemy selection
+	bool mEnemySelected;
+
+	// Allow view to know selection has been updated
+	bool mSelectionChanged;
 	// delta time 
 	double currentTime;
 

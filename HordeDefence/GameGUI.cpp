@@ -1,6 +1,6 @@
 #include "GameGUI.h"
 #include "Control.h"
-
+#include <sstream>
 bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b) {
 	return (a->getIsoDepth() < b->getIsoDepth());
 }
@@ -15,6 +15,13 @@ GameGUI::GameGUI()
 	m_viewZoomFactor = 155.0f;
 	m_yIncreasing = 0;
 	m_xIncreasing = 0;
+	mUnitButtons = 0;
+
+	// Minimap
+	// Set size to 640 × 480
+	AnImage.SetSize(640, 480);
+	// Set its color depth to 32-bits
+	AnImage.SetBitDepth(32);
 }
 
 void GameGUI::start()
@@ -50,6 +57,13 @@ void GameGUI::update()
 
 	glfwSwapBuffers(m_window.get());
 	glfwPollEvents();
+
+	if (m_model->getSelectionChanged() == true)
+	{
+		updateSelection();
+		m_model->setSelectionChanged(false);
+	}
+	updateMinimap();
 }
 
 void GameGUI::close()
@@ -69,8 +83,36 @@ void GameGUI::loadGUI()
 void GameGUI::loadGameGUI()
 {
 	m_bBlockInput = false;
+
+	// Mini map pane
+	CEGUI::FrameWindow* mapFrame = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/FrameWindow",
+		glm::vec4(0.0f, 0.70f, 0.2f, 0.30f), glm::vec4(0.0f), "MapFrame"));
+
+	loadScheme("TaharezLook.scheme");
+	miniMap = static_cast<CEGUI::FrameWindow*>(createWidget("TaharezLook/ImageButton",
+		glm::vec4(0.01f, 0.73f, 0.18f, 0.22f), glm::vec4(0.0f), "MiniMap"));
+	loadScheme("OgreTray.scheme");
+	//Unit info pane
 	CEGUI::FrameWindow* bottomFrame = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/FrameWindow",
-		glm::vec4(0.0f, 0.85f, 1.0f, 0.15f), glm::vec4(0.0f), "bottomFrame"));
+		glm::vec4(0.2f, 0.80f, 0.6f, 0.20f), glm::vec4(0.0f), "bottomFrame"));
+
+	CEGUI::FrameWindow* unitList = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
+		glm::vec4(0.21f, 0.82f, 0.38f, 0.18f), glm::vec4(0.0f), "UnitList"));
+
+	CEGUI::FrameWindow* unitInfo = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
+		glm::vec4(0.61f, 0.82f, 0.18f, 0.18f), glm::vec4(0.0f), "UnitInfo"));
+
+
+	//Unit actions pane
+	CEGUI::FrameWindow* unitActionFrame = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/FrameWindow",
+		glm::vec4(0.8f, 0.70f, 0.2f, 0.30f), glm::vec4(0.0f), "unitActionFrame"));
+
+	CEGUI::FrameWindow* groupActions = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
+		glm::vec4(0.81f, 0.71f, 0.18f, 0.28f), glm::vec4(0.0f), "GroupActions"));
+
+	guiTex = createTexture("Texture");
+	image = (CEGUI::BasicImage*)(&CEGUI::ImageManager::getSingleton().create("BasicImage", "RTTImage"));
+	
 	m_bMenuUp = false;
 
 }
@@ -102,6 +144,118 @@ bool GameGUI::keyAction(int key, int scancode, int action)
 	{
 		return true;
 	}
+}
+
+
+bool GameGUI::updateSelection()
+{
+	for (int a = 0; a < mUnitIDs.size(); a++)
+	{
+		std::stringstream ss;
+		ss << mUnitIDs[a];
+		string str = ss.str();
+		string unitButtonName = "UnitButton" + str;
+		destroyWidget(unitButtonName);
+	}
+
+	mUnitIDs.clear();
+	for (auto unit : m_model->getSelectedUnits())
+	{
+		mUnitIDs.push_back(unit.second->getObjectID());
+		std::stringstream ss;
+		ss << unit.second->getObjectID();
+		string str = ss.str();
+		string unitButtonName = "UnitButton" + str;
+		CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/AltStaticImage",
+			glm::vec4(0.22f, 0.835f, 0.05f, 0.08f), glm::vec4(0.0f), unitButtonName));
+		button->setText("");
+		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+	}
+	return true;
+}
+
+bool GameGUI::updateMinimap()
+{
+	BMP Image;
+	Image.ReadFromFile("C:\\Users\\adams\\Source\\Repos\\HordeDefence\\HordeDefenceArt\\Minimap\\minimap.bmp");
+	unsigned int *mPixelBuffer = new unsigned int[Image.TellWidth() * Image.TellHeight()];
+	memset(mPixelBuffer, 0, Image.TellWidth() * Image.TellHeight() * sizeof(unsigned int));
+
+	for (int i = 0; i<Image.TellWidth(); i++)
+
+	{
+
+		for (int j = 0; j<Image.TellHeight(); j++)
+
+		{
+			mPixelBuffer[j * Image.TellWidth() + i] = (unsigned int)((Image(i, j)->Red << 0) | (Image(i, j)->Green << 8) | (Image(i, j)->Blue << 16) | (0 << 24));
+
+		}
+
+	}
+
+	int startLocX = 256;
+	int startLocY = 128;
+
+	std::map<std::pair<int,int>,shared_ptr<Tile>> tiles = m_model->getTiles();
+	int width = m_model->getMapWidth();
+	int height = m_model->getMapHeight();
+	int widthPixels = 512/ width;
+	int heightPixels = 512 / height;
+	for (int x = 0; x<width; x++)
+	{
+		for (int y = 0; y<height; y++)
+		{
+			int r, g, b;
+			if (tiles[pair<int, int>(x, y)]->isWalkable())
+			{
+
+				r = 0, g = 150, b = 0;
+			}
+			else
+			{
+				r = 0, g = 0, b = 150;
+
+			}
+			int xLoc = startLocX + ((x - y) * widthPixels / 2);
+			int yLoc = startLocY + ((x + y) * heightPixels / 4);
+			for (int i = 0; i<widthPixels / 2; i++)
+			{
+				for (int n = -(i / 2); n <= i / 2; n++)
+				{
+					mPixelBuffer[(yLoc + n) * Image.TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
+				}
+
+			}
+			for (int i = widthPixels / 2; i<widthPixels; i++)
+			{
+				for (int n = -(((widthPixels -1) - i) / 2); n <= ((width / 2 - 1) - i) / 2; n++)
+				{
+					mPixelBuffer[(yLoc + n) * Image.TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
+				}
+
+			}
+		}
+	}
+
+	
+
+	guiTex->loadFromMemory(mPixelBuffer, CEGUI::Sizef(Image.TellWidth(), Image.TellHeight()), CEGUI::Texture::PF_RGBA);
+
+	//// put the texture in an image
+
+	const CEGUI::Rectf rect(CEGUI::Vector2f(0.0f, 0.0f), guiTex->getOriginalDataSize());
+	image->setTexture(guiTex);
+	image->setArea(rect);
+	image->setAutoScaled(CEGUI::ASM_Both);
+
+	// set the image on the static window
+	miniMap->setProperty("NormalImage", "RTTImage");
+	miniMap->setProperty("HoverImage", "RTTImage");
+	miniMap->setProperty("PushedImage", "RTTImage");
+	miniMap->setProperty("DisabledImage", "RTTImage");
+	return true;
+	//testButton->setProperty("HoverImage", "RTTImage");
 }
 
 /*  n_bActivate
@@ -165,6 +319,20 @@ bool GameGUI::toggleGameMenu(int n_bActivate)
 	}
 
 	return m_bMenuUp;
+}
+
+bool GameGUI::onSelectUnit(const CEGUI::EventArgs& e)
+{
+	const CEGUI::WindowEventArgs& we =
+		static_cast<const CEGUI::WindowEventArgs&>(e);
+	CEGUI::String senderID = we.window->getName();
+	string id = senderID.c_str();
+	id = id.substr(10);
+	std::istringstream buffer(id);
+	int value;
+	buffer >> value;
+	m_model->selectUnit(value);
+	return true;
 }
 
 bool GameGUI::onReturnToGame(const CEGUI::EventArgs& e)

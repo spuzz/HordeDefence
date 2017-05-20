@@ -19,11 +19,14 @@ Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 	worldCreation newWorld(this);
 	mCollisionSytem = std::shared_ptr<Collision>(new Collision(mTiles));
 	addHumanCharacter(45, 41, 3, 0, "greatstaff", "clothes", "", 0);
-	addHumanCharacter(43, 42, 3, 0, "sword", "steel", "shield",0);
-	addBasicUnit(46, 35, 3, 1,1);
+	//addHumanCharacter(43, 42, 3, 0, "sword", "steel", "shield",0);
+	//addBasicUnit(46, 35, 3, 1,1);
 	addBasicUnit(34, 34, 3, 1, 1);
 	addTeleporter(45, 46, 3);
-	mAllUnits.at(mGameObjectID - 1)->attackMove(Vector3D(50, 34,0));
+
+	mSelectionChanged = false;
+
+	//mAllUnits.at(mGameObjectID - 1)->attackMove(Vector3D(50, 34,0));
 	//mPlayerUnits.back()->SetEquipment("greatstaff", "clothes", "");
 	//addPlayerUnit(std::shared_ptr<Unit>(new Unit(mAstarGrid, Vector3D(43, 42, 3), *mUnitTypes[0].get())));
 	//mPlayerUnits.back()->SetEquipment("sword", "steel", "shield");
@@ -69,9 +72,20 @@ void Model::update(float nSeconds)
 
 void Model::selectOnLocation(GameMath::Rectangle rect)
 {
-	//for (auto unit : mPlayerUnits) {
-	//	unit->newTarget(Vector3D(x, y, 0));
-	//}
+	mSelectionChanged = true;
+	for (auto unit : mSelectedUnits)
+	{
+		unit.second->setSelected(false);
+	}
+	mSelectedUnits.clear();
+	for (auto unit : mPlayerUnits) {
+		GameMath::Rectangle unitRect(Vector3D(unit.second->getScreenLocation().x - 2, unit.second->getScreenLocation().y - 1,0), 4, 4);
+		if (GameMath::GameMath::rectToRect(unitRect,rect))
+		{
+			unit.second->setSelected(true);
+			mSelectedUnits.insert(pair<int, shared_ptr<Unit>>(unit.second->getObjectID(), unit.second));
+		}
+	}
 }
 
 void Model::selectOnLocation(float x, float y)
@@ -80,40 +94,63 @@ void Model::selectOnLocation(float x, float y)
 	{
 		if (it->second->collide(Vector3D(x, y, 0)))
 		{
+			mSelectionChanged = true;
+			mEnemySelected = false;
 			for (auto unit : mSelectedUnits)
 			{
-				it->second->setSelected(false);
+				unit.second->setSelected(false);
 			}
 			mSelectedUnits.clear();
 			it->second->setSelected(true);
+
+			// Check if Player unit selected
+			if (it->second->getPlayer() != 0)
+			{
+				mEnemySelected = true;
+			}
 			mSelectedUnits.insert(pair<int, shared_ptr<Unit>>(it->second->getObjectID(),it->second));
 			break;
 		}
 	}
 }
 
+void Model::selectUnit(int unit)
+{
+	for (auto unit : mSelectedUnits)
+	{
+		unit.second->setSelected(false);
+	}
+	mAllUnits[unit]->setSelected(true);
+	mSelectionChanged = true;
+}
+
 // Determine if location clicked is a unit or tile and push action on selected units
 void Model::actionOnLocation(float x, float y) 
 {
-	for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
+	// If no unit selected or an enemy is the selection do not do any action checks
+	if (mSelectedUnits.size() != 0 && mEnemySelected == false)
 	{
-		if (it->second->collide(Vector3D(x, y, 0)))
+		for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
+		{
+			if (it->second->collide(Vector3D(x, y, 0)))
+			{
+				for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
+				{
+					itSelected->second->newTarget(it->second);
+				}
+				// can't click on tile if unit found firsts so return
+				return;
+			}
+		}
+		if (getTile(x, y)->isWalkable())
 		{
 			for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
 			{
-				itSelected->second->newTarget(it->second);
+				itSelected->second->newTarget(Vector3D(x, y, 0));
 			}
-			// can't click on tile if unit found firsts so return
-			return;
 		}
 	}
-	if (getTile(x, y)->isWalkable())
-	{
-		for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
-		{
-			itSelected->second->newTarget(Vector3D(x, y, 0));
-		}
-	}
+
 
 }
 void Model::createMap()

@@ -52,6 +52,9 @@ void textureLoader::loadUnits()
 	createTexture(unitTextures, "Zombie", "..\\HordeDefenceArt\\Units\\Male\\Zombie\\Zombie.png");
 	createTexture(unitTextures, "Teleporter", "..\\HordeDefenceArt\\Units\\Teleporter\\EnemyGoal\\teleporter-effect-var-4.png");
 	createTexture(unitTextures, "SpawnPoint", "..\\HordeDefenceArt\\Units\\Teleporter\\Spawn\\teleporter-effect-var-2.png");
+	createTexture(unitTextures, "HealthBarFrame", "..\\HordeDefenceArt\\HealthBar\\EmptyBar.png");
+	createTexture(unitTextures, "GreenHealthBar", "..\\HordeDefenceArt\\HealthBar\\GreenBar.png");
+	createTexture(unitTextures, "RedHealthBar", "..\\HordeDefenceArt\\HealthBar\\RedBar.png");
 }
 
 void textureLoader::loadMaps()

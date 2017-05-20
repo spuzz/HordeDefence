@@ -19,6 +19,8 @@ public:
 	virtual Vector3D& getIsoLocation() { return mIsoLocation; }
 	virtual void setIsoLocation(Vector3D nIsoLocation) { mIsoLocation = nIsoLocation; }
 
+	virtual Vector3D& getScreenLocation() { return mScreenLocation; }
+	virtual void calcScreenLocation();
 	virtual float& getZHeight() { return mZHeight; }
 	virtual void setZHeight(float nZHeight) { mZHeight = nZHeight; }
 
@@ -67,6 +69,7 @@ public:
 protected:
 
 	GameMath::Vector3D mIsoLocation;
+	GameMath::Vector3D mScreenLocation;
 	float mZHeight;
 	// AABB in iso world space
 	GameMath::Vector3D mMin;

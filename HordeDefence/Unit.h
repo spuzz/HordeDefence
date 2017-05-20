@@ -68,6 +68,7 @@ public:
 	virtual void dying();
 
 	virtual void draw(const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc, textureLoader& txtrLoader);
+	void drawUnitHealth(textureLoader& txtrLoader,double x, double y, const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc);
 	virtual std::vector<GLuint> GetTextures(textureLoader& txtrLoader);
 	Vector3D getTarget() { return mTarget; }
 	shared_ptr<Unit> getTargetUnit() { return mTargetUnit; }

@@ -94,6 +94,7 @@
     <ClCompile Include="Control.cpp" />
     <ClCompile Include="Debuff.cpp" />
     <ClCompile Include="Dying.cpp" />
+    <ClCompile Include="EasyBMP.cpp" />
     <ClCompile Include="GameGUI.cpp" />
     <ClCompile Include="GameMath.cpp" />
     <ClCompile Include="GUI.cpp" />
@@ -155,6 +156,10 @@
     <ClInclude Include="Control.h" />
     <ClInclude Include="Debuff.h" />
     <ClInclude Include="Dying.h" />
+    <ClInclude Include="EasyBMP.h" />
+    <ClInclude Include="EasyBMP_BMP.h" />
+    <ClInclude Include="EasyBMP_DataStructures.h" />
+    <ClInclude Include="EasyBMP_VariousBMPutilities.h" />
     <ClInclude Include="GameGUI.h" />
     <ClInclude Include="GameMath.h" />
     <ClInclude Include="GUI.h" />

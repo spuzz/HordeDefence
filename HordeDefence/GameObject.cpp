@@ -38,6 +38,14 @@ void GameObject::calcAABBWorldSpace()
 	mMax = mIsoLocation + mMaxRelative;
 }
 
+void GameObject::calcScreenLocation()
+{
+	double x = mIsoLocation.x - 0.5;
+	double y = mIsoLocation.y - 0.5;
+	mScreenLocation.x = x - y;
+	mScreenLocation.y = (x + y) * 0.5;
+}
+
 GameObject::~GameObject()
 {
 	int test = 0;

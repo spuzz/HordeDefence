@@ -41,6 +41,7 @@ public:
 	void loadScheme(const std::string& schemeFile);
 	void setFont(const std::string& fontFile);
 	CEGUI::Window* createWidget(const std::string& type, const glm::vec4& destRectPerc, const glm::vec4& destRectPix, const std::string& name = "");
+	CEGUI::Texture* createTexture(string texture);
 	static void setWidgetDestRect(CEGUI::Window* widget, const glm::vec4& destRectPerc, const glm::vec4& destRectPix);
 	void destroyWidget(const std::string& name);
 
