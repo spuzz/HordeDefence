@@ -8,6 +8,9 @@
 #include <memory>
 #include "textureLoader.h"
 #include "Model.h"
+
+#include "ImageButton.h"
+
 class Control;
 class GUI {
 public:
@@ -44,6 +47,7 @@ public:
 	CEGUI::Texture* createTexture(string texture);
 	static void setWidgetDestRect(CEGUI::Window* widget, const glm::vec4& destRectPerc, const glm::vec4& destRectPix);
 	void destroyWidget(const std::string& name);
+	shared_ptr<ImageButton> GUI::createImageButton(const glm::vec4& vec, const string& buttonName, const string& texturePath);
 
 	// Getters and Setters
 	static CEGUI::OpenGL3Renderer* getRenderer() { return m_renderer; }
@@ -88,6 +92,7 @@ protected:
 	float m_xScreenLoc;
 	float m_zScreenLoc;
 	float m_xIncreasing, m_yIncreasing;
-
+	std::map<string, CEGUI::Texture*> mTextures;
+	int mImageCount;
 	virtual void perspectiveSetup() {};
 };

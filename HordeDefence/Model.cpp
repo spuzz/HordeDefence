@@ -6,34 +6,30 @@
 #include <utility> 
 #include "worldCreation.h"
 #include "Teleporter.h"
+
+
 Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector()) 
 {
-	//mTiles[0] = Tile(0, 0, 0, 0, 0, 0);
-	std::string fileName = "..\\HordeDefenceArt\\Maps\\DemoMap.tmx";
+	std::string fileName = "..\\HordeDefenceArt\\Maps\\MapOne.tmx";
 	tmxMap->ParseFile(fileName);
 	createMap();
 
 	fileName = "..\\HordeDefenceArt\\Units\\Units.xml";
-
+	mCurrentTime = 0;
 	ParseUnitXml(fileName);
 	worldCreation newWorld(this);
 	mCollisionSytem = std::shared_ptr<Collision>(new Collision(mTiles));
-	addHumanCharacter(45, 41, 3, 0, "greatstaff", "clothes", "", 0);
+
+	mAIController = new AIController(std::shared_ptr<Model>(this),"MapOne", mSpawnLocations,mMapWidth,mMapHeight);
+	//addHumanCharacter(45, 41, 3, "Human", "greatstaff", "clothes", "", 0,"Knight");
 	//addHumanCharacter(43, 42, 3, 0, "sword", "steel", "shield",0);
 	//addBasicUnit(46, 35, 3, 1,1);
-	addBasicUnit(34, 34, 3, 1, 1);
-	addTeleporter(45, 46, 3);
+	//addBasicUnit(34, 34, 3, "Orc", 1, "Warrior");
+	//addTeleporter(45, 46, 3);
 
 	mSelectionChanged = false;
 
-	//mAllUnits.at(mGameObjectID - 1)->attackMove(Vector3D(50, 34,0));
-	//mPlayerUnits.back()->SetEquipment("greatstaff", "clothes", "");
-	//addPlayerUnit(std::shared_ptr<Unit>(new Unit(mAstarGrid, Vector3D(43, 42, 3), *mUnitTypes[0].get())));
-	//mPlayerUnits.back()->SetEquipment("sword", "steel", "shield");
-	//Knight unitTest(1, 100, 100, pair<float, float>(50, 50), 0);
-	//mPlayerUnits.push_back(std::shared_ptr<Unit>(new Knight(mAstarGrid,1, 100, 100, Vect(45, 50, 0), 0)));
-	//addPlayerUnit(std::shared_ptr<Unit>(new Knight(mAstarGrid, 1, 100, 100, Vect(40, 61, 3), 0)));
-	//mPlayerUnits.push_back(std::shared_ptr<Unit>(new Knight(mAstarGrid,1, 100, 100, pair<float, float>(30, 70), 0)));
+
 }
 
 
@@ -43,6 +39,30 @@ shared_ptr<Tile> Model::getTile(int x, int y)
 	return mTiles[std::pair<int,int>(x, y)];
 }
 
+std::vector<string> Model::getUnitTypes()
+{
+	std::vector<string> keys;
+	for (std::map<string, std::map<string, shared_ptr<UnitType>>>::iterator it = mUnitTypes.begin(); it != mUnitTypes.end(); ++it) {
+		keys.push_back(it->first);
+	}
+	return keys;
+}
+
+std::vector<string> Model::getUnitTypeClasses(const string& nUnitType)
+{
+	std::map<string, shared_ptr<UnitType>> unitClass = mUnitTypes[nUnitType];
+	std::vector<string> keys;
+	for(std::map<string, shared_ptr<UnitType>>::iterator it = unitClass.begin(); it != unitClass.end(); ++it) {
+		keys.push_back(it->first);
+	}
+	return keys;
+}
+
+UnitType Model::getUnitType(const string& nUnitType, const string& nUnitClass)
+{
+	return *mUnitTypes[nUnitType][nUnitClass].get();
+}
+
 void Model::update(float nSeconds)
 {
 	if (nSeconds > 0.0166)
@@ -50,7 +70,9 @@ void Model::update(float nSeconds)
 		nSeconds = 0.0166;
 	}
 
+	mCurrentTime += nSeconds;
 	std::vector<int> deletableIds;
+	mAIController->Update(mCurrentTime);
 	for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
 	{
 		if (it->second->isDead())
@@ -92,7 +114,8 @@ void Model::selectOnLocation(float x, float y)
 {
 	for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
 	{
-		if (it->second->collide(Vector3D(x, y, 0)))
+		GameMath::Rectangle unitRect(Vector3D(it->second->getScreenLocation().x - 2, it->second->getScreenLocation().y - 1, 0), 4, 4);
+		if (GameMath::GameMath::pointToRect(Vector3D(x, y, 0), unitRect))
 		{
 			mSelectionChanged = true;
 			mEnemySelected = false;
@@ -120,7 +143,9 @@ void Model::selectUnit(int unit)
 	{
 		unit.second->setSelected(false);
 	}
+	mSelectedUnits.clear();
 	mAllUnits[unit]->setSelected(true);
+	mSelectedUnits.insert(pair<int, shared_ptr<Unit>>(unit, mAllUnits[unit]));
 	mSelectionChanged = true;
 }
 
@@ -166,34 +191,40 @@ void Model::createMap()
 
 
 	for (int i = tmxMap->GetTileLayers().size(); i >=  1; i--) {
-		for (int x = 0; x < width; x++) {
-			for (int y = 0; y < height; y++) {
-				const Tmx::MapTile tileTest = tmxMap->GetTileLayers()[i - 1]->GetTile(y, x);
-				int gid = tmxMap->GetTileLayers()[i - 1]->GetTileId(y, x);
-				int walkable = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
-				if (tileTest.tilesetId == -1) {
-					if (i == 0) {
+		if(tmxMap->GetTileLayers()[i - 1]->GetName() == "Collision") {
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					const Tmx::MapTile tileTest = tmxMap->GetTileLayers()[i - 1]->GetTile(y, x);
+					int gid = tmxMap->GetTileLayers()[i - 1]->GetTileId(y, x);
+					int walkable = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
+					if (walkable != 1)
+					{
 						mAstarGrid->at(width - x - 1)[height - y - 1] = -1;
 					}
-					continue;
-				}
-				else if (mAstarGrid->at(width - x - 1)[height - y - 1] != 0) {
-					continue;
-				}	
-				else {
-					if (walkable == 1) {
+					else
+					{
 						mAstarGrid->at(width - x - 1)[height - y - 1] = 10;
 					}
-					else if(walkable == 0) {
-						mAstarGrid->at(width - x - 1)[height - y - 1] = -1;
+				}
+			}
+		}
+		else if (tmxMap->GetTileLayers()[i - 1]->GetName() == "Spawn Points") {
+			for (int x = 0; x < width; x++) {
+				for (int y = 0; y < height; y++) {
+					const Tmx::MapTile tileTest = tmxMap->GetTileLayers()[i - 1]->GetTile(y, x);
+					int gid = tmxMap->GetTileLayers()[i - 1]->GetTileId(y, x);
+					int spawnPoint = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Spawn Point");
+					if (spawnPoint != 0)
+					{
+						mSpawnLocations.push_back(Vector3D(x, y, 0));
 					}
-					
 				}
 			}
 		}
 	}
 
 }
+
 
 void Model::ParseUnitXml(const string& inFileName)
 {
@@ -202,41 +233,52 @@ void Model::ParseUnitXml(const string& inFileName)
 	if (doc.LoadFile(inFileName.c_str()) == tinyxml2::XML_NO_ERROR)
 	{
 		tinyxml2::XMLElement* mainXMLElement = doc.FirstChildElement("horde_defence")->FirstChildElement("units");
-		tinyxml2::XMLElement* unitElement = mainXMLElement->FirstChildElement("unit");
-		while (unitElement != nullptr)
+		tinyxml2::XMLElement* unitsElement = mainXMLElement->FirstChildElement("unit");
+		while (unitsElement != nullptr)
 		{
-			shared_ptr<UnitType> unit(new UnitType());
-			mUnitTypes.push_back(unit);
-			tinyxml2::XMLElement* element = unitElement->FirstChildElement("name");
-			unit->setName(element->GetText());
-			element = unitElement->FirstChildElement("movement_speed");
-			unit->setMoveSpeed(std::stof(element->GetText()));
-			element = unitElement->FirstChildElement("attack_speed");
-			unit->setAttackSpeed(std::stof(element->GetText()));
-			element = unitElement->FirstChildElement("size");
-			unit->setSize(std::stof(element->GetText()));
-			element = unitElement->FirstChildElement("hp");
-			unit->setHitPoints(std::stof(element->GetText()));
-			tinyxml2::XMLElement* animations = unitElement->FirstChildElement("animations");
-			element = animations->FirstChildElement("animation");
-			string name;
-			int initFrame, frames;
-			Animation anim;
-			while (element != nullptr)
+			tinyxml2::XMLElement* unitElement = unitsElement->FirstChildElement("class");
+			std::map < string, shared_ptr<UnitType>> units;
+			
+			while (unitElement != nullptr)
 			{
 
-				
-				tinyxml2::XMLElement* nameElem = element->FirstChildElement("name");
-				name = nameElem->GetText();
-				tinyxml2::XMLElement* initElem = element->FirstChildElement("start");
-				initFrame = atoi(initElem->GetText());
-				tinyxml2::XMLElement* framesElem = element->FirstChildElement("frames");
-				frames = atoi(framesElem->GetText());
-				anim.addAnimation(name, initFrame, frames);
-				element = element->NextSiblingElement();
+				shared_ptr<UnitType> unit(new UnitType());
+				unit->setName(unitsElement->Attribute("value"));
+				unit->setClass(unitElement->Attribute("value"));
+				tinyxml2::XMLElement* element = unitElement->FirstChildElement("movement_speed");
+				unit->setMoveSpeed(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("attack_speed");
+				unit->setAttackSpeed(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("size");
+				unit->setSize(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("hp");
+				unit->setHitPoints(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("range");
+				unit->setRange(std::stof(element->GetText()));
+				tinyxml2::XMLElement* animations = unitElement->FirstChildElement("animations");
+				element = animations->FirstChildElement("animation");
+				units[unit->getClass()] = unit;
+				string name;
+				int initFrame, frames;
+				Animation anim;
+				while (element != nullptr)
+				{
+
+
+					tinyxml2::XMLElement* nameElem = element->FirstChildElement("name");
+					name = nameElem->GetText();
+					tinyxml2::XMLElement* initElem = element->FirstChildElement("start");
+					initFrame = atoi(initElem->GetText());
+					tinyxml2::XMLElement* framesElem = element->FirstChildElement("frames");
+					frames = atoi(framesElem->GetText());
+					anim.addAnimation(name, initFrame, frames);
+					element = element->NextSiblingElement();
+				}
+				unit->setAnimation(anim);
+				unitElement = unitElement->NextSiblingElement();
 			}
-			unit->setAnimation(anim);
-			unitElement = unitElement->NextSiblingElement();
+			mUnitTypes[unitsElement->Attribute("value")] = units;
+			unitsElement = unitsElement->NextSiblingElement();
 		}
 	}
 
@@ -261,42 +303,76 @@ void Model::addTile(Tile inTile)
 	mGameObjects.push_back(tile);
 }
 
-void Model::addHumanCharacter(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType, const string& nWeapon, const string& nArmor, const string& nOffhand, const int& isPlayerUnit)
+int Model::addHumanCharacter(const float& xLoc, const float& yLoc, const float& zDepth, const string& nUnitType, const string& nWeapon, const string& nArmor, const string& nOffhand, const int& isPlayerUnit, const string& nUnitClass)
 {
+	if (mUnitTypes.find(nUnitType) == mUnitTypes.end())
+	{
+		return -1;
+	}
+
+	if (mUnitTypes[nUnitType].find(nUnitClass) == mUnitTypes[nUnitType].end())
+	{
+		return -1;
+	}
+
 	mGameObjectID++;
-	HumanCharacter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType].get(),mGameObjectID);
+	HumanCharacter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(),mGameObjectID);
 	unit.SetEquipment(nWeapon, nArmor, nOffhand);
 	
 	shared_ptr<Unit> newUnit = std::make_shared<HumanCharacter>(unit);
-	addUnit(newUnit, isPlayerUnit);
+	if (addUnit(newUnit, isPlayerUnit) == true)
+	{
+		return mGameObjectID;
+	}
+	else
+	{
+		return -1;
+	} 
 	
 }
 
-void Model::addBasicUnit(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType,const int& isPlayerUnit)
+int Model::addBasicUnit(const float& xLoc, const float& yLoc, const float& zDepth, const string& nUnitType,const int& isPlayerUnit, const string& nUnitClass)
 {
+	if (mUnitTypes.find(nUnitType) == mUnitTypes.end())
+	{
+		return -1;
+	}
+
+	if (mUnitTypes[nUnitType].find(nUnitClass) == mUnitTypes[nUnitType].end())
+	{
+		return -1;
+	}
 	mGameObjectID++;
-	Unit unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType].get(), mGameObjectID);
+	Unit unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(), mGameObjectID);
 
 	shared_ptr<Unit> newUnit = std::make_shared<Unit>(unit);
-	addUnit(newUnit, isPlayerUnit);
+	if (addUnit(newUnit, isPlayerUnit) == true)
+	{
+		return mGameObjectID;
+	}
+	else
+	{
+		return -1;
+	}
 
 }
 
-void Model::addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth)
+bool Model::addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth)
 {
 	mGameObjectID++;
-	Teleporter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[2].get(), mGameObjectID);
+	Teleporter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes["Teleporter"][""].get(), mGameObjectID);
 
 	shared_ptr<Unit> newUnit = std::make_shared<Teleporter>(unit);
-	addUnit(newUnit, 0);
+	return addUnit(newUnit, 0);
+	
 
 }
 
-void Model::addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit)
+bool Model::addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit)
 {
 	if (mCollisionSytem->addUnit(nUnit) == false)
 	{
-		return;
+		return false;
 	}
 	nUnit->setPlayer(isPlayerUnit);
 	nUnit->setCollisionSystem(mCollisionSytem);
@@ -310,6 +386,7 @@ void Model::addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit)
 	{
 		mAIUnits.insert(pair<int, shared_ptr<Unit>>(mGameObjectID, nUnit));
 	}
+	return true;
 }
 
 void Model::deleteUnit(int nUnitID)
@@ -328,6 +405,7 @@ void Model::deleteUnit(int nUnitID)
 	mAIUnits.erase(nUnitID);
 	mCollisionSytem->cleanID(nUnitID);
 }
+
 
 Model::~Model()
 {

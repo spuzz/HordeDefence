@@ -100,7 +100,7 @@ public:
 			{
 				if (x_pos == mXMousePos && y_pos == mYMousePos)
 				{
-					mModel->selectOnLocation(mouse2DPos.first, mouse2DPos.second);
+					mModel->selectOnLocation(H.x, H.y);
 				}
 				else
 				{

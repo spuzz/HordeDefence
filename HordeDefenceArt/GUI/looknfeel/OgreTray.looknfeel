@@ -776,8 +776,8 @@
         <PropertyLinkDefinition targetProperty="ScrollPosition" widget="__auto_vscrollbar__" type="float" name="VertScrollPosition"/>
         <PropertyLinkDefinition targetProperty="PageSize" widget="__auto_vscrollbar__" type="float" name="VertScrollPageSize"/>
         <PropertyLinkDefinition targetProperty="DocumentSize" widget="__auto_vscrollbar__" type="float" name="VertScrollDocumentSize"/>
-        <Property name="BackgroundEnabled" value="true"/>
-        <Property name="FrameEnabled" value="true"/>
+        <Property name="BackgroundEnabled" value="false"/>
+        <Property name="FrameEnabled" value="false"/>
         <Property name="TextColours" value="tl:FF000000 tr:FF000000 bl:FF000000 br:FF000000"/>
         <Property name="HorzFormatting" value="WordWrapLeftAligned"/>
         <Property name="Size" value="{{0, 256}, {0, 128}}" />

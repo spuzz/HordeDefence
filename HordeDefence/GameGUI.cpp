@@ -1,6 +1,7 @@
 #include "GameGUI.h"
 #include "Control.h"
 #include <sstream>
+
 bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b) {
 	return (a->getIsoDepth() < b->getIsoDepth());
 }
@@ -12,10 +13,9 @@ GameGUI::GameGUI()
 	m_xScreenLoc = 0;
 	m_yScreenLoc = -40;
 	m_zScreenLoc = -220;
-	m_viewZoomFactor = 155.0f;
+	m_viewZoomFactor = 255.0f;
 	m_yIncreasing = 0;
 	m_xIncreasing = 0;
-	mUnitButtons = 0;
 
 	// Minimap
 	// Set size to 640 × 480
@@ -60,10 +60,14 @@ void GameGUI::update()
 
 	if (m_model->getSelectionChanged() == true)
 	{
-		updateSelection();
+		updateSelection(true);
 		m_model->setSelectionChanged(false);
 	}
-	updateMinimap();
+	else
+	{
+		updateSelection(false);
+	}
+	//updateMinimap();
 }
 
 void GameGUI::close()
@@ -77,6 +81,8 @@ void GameGUI::loadGUI()
 	loadScheme("OgreTray.scheme");
 	setFont("DejaVuSans-10");
 	loadGameGUI();
+	//loadMinimap();
+	loadCommands();
 	showMouseCursor();
 }
 
@@ -112,102 +118,292 @@ void GameGUI::loadGameGUI()
 
 	guiTex = createTexture("Texture");
 	image = (CEGUI::BasicImage*)(&CEGUI::ImageManager::getSingleton().create("BasicImage", "RTTImage"));
+
+	loadTextures();
+	createSelectedUnitButtons();
 	
+	mUnitInfoPanel = shared_ptr<UnitInfoPanel>(new UnitInfoPanel(this,0.35,0.82));
+	mUnitInfoPanel->setVisible(false);
 	m_bMenuUp = false;
 
 }
 
-bool GameGUI::mouseAction(int button, int action)
+bool GameGUI::loadCommands()
 {
-	injectMouseAction(button, action);
+	CEGUI::PushButton* command1 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.82f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command1"));
+	command1->setText("Move");
+	CEGUI::PushButton* command2 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.8733f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command2"));
+	command2->setText("Stop");
+	CEGUI::PushButton* command3 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.9266f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command3"));
+	command3->setText("Attack");
+	CEGUI::PushButton* command4 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.82f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command4"));
+	command4->setText("Attack Move");
+	CEGUI::PushButton* command5 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.8733f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command5"));
+	command5->setText("Guard");
+	CEGUI::PushButton* command6 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.9266f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command6"));
+	command6->setText("Retreat");
+	CEGUI::PushButton* command7 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.82f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command7"));
+	command7->setText("Ability 1");
+	CEGUI::PushButton* command8 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.8733f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command8"));
+	command8->setText("Ability 2");
+	CEGUI::PushButton* command9 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+		glm::vec4(0.9266f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command9"));
+	command9->setText("Ability 3");
+	command9->setVisible(false);
+	//command->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+	//unitImage->setTexture(unitText);
+	//command->setProperty("NormalImage", "unitImage");
+	//command->setProperty("HoverImage", "unitImage");
+	//command->setProperty("PushedImage", "unitImage");
+	//command->setProperty("DisabledImage", "unitImage");
 	return true;
 }
 
-bool GameGUI::keyAction(int key, int scancode, int action)
+void GameGUI::loadTextures()
 {
-	if (m_bBlockInput)
+
+
+	for (auto type : m_model->getUnitTypes())
 	{
-		return false;
+		for (auto unitClass : m_model->getUnitTypeClasses(type))
+		{
+			string textName;
+			if (unitClass == "")
+			{
+				textName = string(type);
+			}
+			else
+			{
+				textName = string(type + "_" + unitClass);
+			}
+			string texPath = "..\\HordeDefenceArt\\Units\\portraits\\" + textName + ".png";
+			CEGUI::Texture* text = createTexture(textName);
+			text->loadFromFile(texPath, "Units");
+			mTextures[textName] = text;
+		}
+	}
+	CEGUI::Texture* text = createTexture("EmptyBar");
+	text->loadFromFile("..\\HordeDefenceArt\\HealthBar\\EmptyBar.png", "UI");
+	mTextures["EmptyBar"] = text;
+
+	text = createTexture("GreenBar");
+	text->loadFromFile("..\\HordeDefenceArt\\HealthBar\\GreenBar.png", "UI");
+	mTextures["GreenBar"] = text;
+
+	text = createTexture("Icons");
+	text->loadFromFile("..\\HordeDefenceArt\\Icons\\fantasy-tileset.png", "UI");
+	mTextures["Icons"] = text;
+}
+
+void GameGUI::createSelectedUnitButtons()
+{
+	// 1 button for single unit selection - twice size
+	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f, 0.835f, 0.10f, 0.12f), "unit" + std::to_string(0), "Default");
+	shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "emptyhealthbar" + std::to_string(0), "EmptyBar");
+	shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "healthbar" + std::to_string(0), "GreenBar");
+
+	UnitInfoButton infoBtn(btn, btn2, btn3);
+	infoBtn.setEnabled(false);
+	mUnitButtons.push_back(infoBtn);
+
+
+
+	for (int a = 0; a < 6; a++)
+	{
+		shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.835f, 0.05f, 0.06f), "unit" + std::to_string(a + 1), "Default");
+
+		shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "emptyhealthbar" + std::to_string(a + 1), "EmptyBar");
+		shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "healthbar" + std::to_string(a + 1), "GreenBar");
+
+		UnitInfoButton infoBtn(btn, btn2, btn3);
+		infoBtn.setEnabled(false);
+		mUnitButtons.push_back(infoBtn);
 	}
 
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		if (toggleGameMenu(2))
+
+}
+
+
+bool GameGUI::updateSelection(const bool& selectionChanged)
+{
+	if (selectionChanged == true)
+	{
+
+		
+		// Activite large info button and add unit info to bar if only 1 unit selected
+		string textName;
+		if (m_model->getSelectedUnits().size() == 1)
 		{
-			m_Control->setPause(true);
+			// renabling only way to allow retexture?
+			mUnitButtons[0].setEnabled(false);
+			mUnitButtons[0].setEnabled(true);
+			
+			mUnitInfoPanel->setVisible(true);
+			
+			if (m_model->getSelectedUnits().begin()->second->getClassType() == "")
+			{
+				textName = string(m_model->getSelectedUnits().begin()->second->getRace());
+			}
+			else
+			{
+				textName = string(m_model->getSelectedUnits().begin()->second->getRace() + "_" + m_model->getSelectedUnits().begin()->second->getClassType());
+			}
+
+
+			mUnitButtons[0].mUnitImage->changeButtonImage(mTextures[textName]);
+			for (int a = 1; a < 7; a++)
+			{
+				mUnitButtons[a].setEnabled(false);
+			}
 		}
 		else
 		{
-			m_Control->setPause(false);
+			int count = 1;
+			mUnitButtons[0].setEnabled(false);
+			mUnitInfoPanel->setVisible(false);
+			for (auto unit : m_model->getSelectedUnits())
+			{
+				// renabling only way to allow retexture?
+				mUnitButtons[count].setEnabled(false);
+				mUnitButtons[count].setEnabled(true);
+
+				string textName;
+				if (unit.second->getClassType() == "")
+				{
+					textName = string(unit.second->getRace());
+				}
+				else
+				{
+					textName = string(unit.second->getRace() + "_" + unit.second->getClassType());
+				}
+
+				mUnitButtons[count].mUnitImage->changeButtonImage(mTextures[textName]);
+				count++;
+
+			}
+			for (int a = count; a < 7; a++)
+			{
+				mUnitButtons[a].setEnabled(false);
+			}
 		}
 
-	if (checkScreenMoveKey(key, action))
-	{
-		return true;
-	}
-}
-
-
-bool GameGUI::updateSelection()
-{
-	for (int a = 0; a < mUnitIDs.size(); a++)
-	{
-		std::stringstream ss;
-		ss << mUnitIDs[a];
-		string str = ss.str();
-		string unitButtonName = "UnitButton" + str;
-		destroyWidget(unitButtonName);
 	}
 
-	mUnitIDs.clear();
-	for (auto unit : m_model->getSelectedUnits())
+	
+	if (m_model->getSelectedUnits().size() == 1)
 	{
-		mUnitIDs.push_back(unit.second->getObjectID());
-		std::stringstream ss;
-		ss << unit.second->getObjectID();
-		string str = ss.str();
-		string unitButtonName = "UnitButton" + str;
-		CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/AltStaticImage",
-			glm::vec4(0.22f, 0.835f, 0.05f, 0.08f), glm::vec4(0.0f), unitButtonName));
-		button->setText("");
-		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+		float perc = m_model->getSelectedUnits().begin()->second->getCurrentHealth() / m_model->getSelectedUnits().begin()->second->getMaxHealth();
+		mUnitButtons[0].mHealthBar->changeButtonSize(glm::vec2(0.10f * perc, 0.02f), glm::vec2(0.0f));
+		mUnitButtons[0].mHealthBar->changeTextureRatio(perc, 1);
+		mUnitInfoPanel->updateInfo(m_model->getSelectedUnits().begin()->second);
 	}
+	else
+	{
+		int count = 0;
+		for (auto unit : m_model->getSelectedUnits())
+		{
+			float perc = unit.second->getCurrentHealth() / unit.second->getMaxHealth();
+			mUnitButtons[count].mHealthBar->changeButtonSize(glm::vec2(0.05f * perc, 0.01f), glm::vec2(0.0f));
+			mUnitButtons[count].mHealthBar->changeTextureRatio(perc, 1);
+
+			count++;
+		}
+	}
+
+
+	
+	//for (int a = 0; a < mUnitIDs.size(); a++)
+	//{
+	//	std::stringstream ss;
+	//	ss << mUnitIDs[a];
+	//	string str = ss.str();
+	//	string unitButtonName = "UnitButton" + str;
+	//	string unitHealthName = "UnitHealth" + str;
+	//	string unitHealthBackground = "UnitHealthBackground" + str;
+	//	destroyWidget(unitButtonName);
+	//	destroyWidget(unitHealthName);
+	//	destroyWidget(unitHealthBackground);
+	//}
+
+	//mUnitIDs.clear();
+	//int count = 0;
+	//for (auto unit : m_model->getSelectedUnits())
+	//{
+	//	mUnitIDs.push_back(unit.second->getObjectID());
+	//	std::stringstream ss;
+	//	ss << unit.second->getObjectID();
+	//	string str = ss.str();
+	//	string unitButtonName = "UnitButton" + str;
+	//	string unitHealthName = "UnitHealth" + str;
+	//	string unitHealthBackground = "UnitHealthBackground" + str;
+	//	CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("TaharezLook/ImageButton",
+	//		glm::vec4(0.22f + (count*0.05f), 0.835f, 0.05f, 0.06f), glm::vec4(0.0f), unitButtonName));
+	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+	//	
+	//	unitImage->setTexture(unitText);
+	//	button->setProperty("NormalImage", "unitImage");
+	//	button->setProperty("HoverImage", "unitImage");
+	//	button->setProperty("PushedImage", "unitImage");
+	//	button->setProperty("DisabledImage", "unitImage");
+	//	button->setVisible(false);
+
+	//	button = static_cast<CEGUI::PushButton*>(createWidget("TaharezLook/ImageButton",
+	//		glm::vec4(0.22f + (count*0.05f), 0.895f, 0.05f, 0.01f), glm::vec4(0.0f), unitHealthBackground));
+	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+	//	button->setProperty("NormalImage", "unitImage");
+	//	button->setProperty("HoverImage", "unitImage");
+	//	button->setProperty("PushedImage", "unitImage");
+	//	button->setProperty("DisabledImage", "unitImage");
+
+	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
+	//	count++;
+	//}
 	return true;
 }
 
-bool GameGUI::updateMinimap()
-{
-	BMP Image;
-	Image.ReadFromFile("C:\\Users\\adams\\Source\\Repos\\HordeDefence\\HordeDefenceArt\\Minimap\\minimap.bmp");
-	unsigned int *mPixelBuffer = new unsigned int[Image.TellWidth() * Image.TellHeight()];
-	memset(mPixelBuffer, 0, Image.TellWidth() * Image.TellHeight() * sizeof(unsigned int));
 
-	for (int i = 0; i<Image.TellWidth(); i++)
+bool GameGUI::loadMinimap()
+{
+	mMiniMapImage = new BMP();
+	mMiniMapImage->ReadFromFile("..\\HordeDefenceArt\\Minimap\\minimap.bmp");
+	mPixelBuffer = new unsigned int[mMiniMapImage->TellWidth() * mMiniMapImage->TellHeight()];
+	memset(mPixelBuffer, 0, mMiniMapImage->TellWidth() * mMiniMapImage->TellHeight() * sizeof(unsigned int));
+
+	for (int i = 0; i<mMiniMapImage->TellWidth(); i++)
 
 	{
 
-		for (int j = 0; j<Image.TellHeight(); j++)
+		for (int j = 0; j<mMiniMapImage->TellHeight(); j++)
 
 		{
-			mPixelBuffer[j * Image.TellWidth() + i] = (unsigned int)((Image(i, j)->Red << 0) | (Image(i, j)->Green << 8) | (Image(i, j)->Blue << 16) | (0 << 24));
+			mPixelBuffer[j * mMiniMapImage->TellWidth() + i] = (unsigned int)(((*mMiniMapImage)(i, j)->Red << 0) | ((*mMiniMapImage)(i, j)->Green << 8) | ((*mMiniMapImage)(i, j)->Blue << 16) | (0 << 24));
 
 		}
 
 	}
 
 	int startLocX = 256;
-	int startLocY = 128;
+	int startLocY = 384;
 
-	std::map<std::pair<int,int>,shared_ptr<Tile>> tiles = m_model->getTiles();
+	std::map<std::pair<int, int>, shared_ptr<Tile>> tiles = m_model->getTiles();
 	int width = m_model->getMapWidth();
 	int height = m_model->getMapHeight();
-	int widthPixels = 512/ width;
+	int widthPixels = 512 / width;
 	int heightPixels = 512 / height;
 	for (int x = 0; x<width; x++)
 	{
 		for (int y = 0; y<height; y++)
 		{
 			int r, g, b;
-			if (tiles[pair<int, int>(x, y)]->isWalkable())
+			if (tiles[pair<int, int>(x,y)]->isWalkable())
 			{
 
 				r = 0, g = 150, b = 0;
@@ -218,32 +414,79 @@ bool GameGUI::updateMinimap()
 
 			}
 			int xLoc = startLocX + ((x - y) * widthPixels / 2);
-			int yLoc = startLocY + ((x + y) * heightPixels / 4);
-			for (int i = 0; i<widthPixels / 2; i++)
+			int yLoc = startLocY - ((x + y) * heightPixels / 4);
+			for (int i = 0; i<widthPixels; i++)
 			{
 				for (int n = -(i / 2); n <= i / 2; n++)
 				{
-					mPixelBuffer[(yLoc + n) * Image.TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
+					mPixelBuffer[(yLoc + n) * mMiniMapImage->TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
 				}
 
 			}
-			for (int i = widthPixels / 2; i<widthPixels; i++)
+			for (int i = widthPixels; i<widthPixels * 2; i++)
 			{
-				for (int n = -(((widthPixels -1) - i) / 2); n <= ((width / 2 - 1) - i) / 2; n++)
+				int negativeValue = i - widthPixels;
+				for (int n = -((widthPixels - negativeValue) / 2); n <= (widthPixels - negativeValue) / 2; n++)
 				{
-					mPixelBuffer[(yLoc + n) * Image.TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
+					mPixelBuffer[(yLoc + n) * mMiniMapImage->TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
 				}
+			}
+		}
+	}
+	return true;
+}
 
+bool GameGUI::updateMinimap()
+{
+	int startLocX = 256;
+	int startLocY = 384;
+	int width = m_model->getMapWidth();
+	int height = m_model->getMapHeight();
+	int widthPixels = 512 / width;
+	int heightPixels = 512 / height;
+	unsigned int* pixelBuffer = new unsigned int[mMiniMapImage->TellWidth() * mMiniMapImage->TellHeight()];
+	memcpy(pixelBuffer, mPixelBuffer, mMiniMapImage->TellWidth() * mMiniMapImage->TellHeight() * sizeof(unsigned int));
+	std::map<int, std::shared_ptr<Unit>> units = m_model->getAllUnits();
+	
+	for (auto unit : units)
+	{
+		int x = unit.second->getIsoLocation().x;
+		int y = unit.second->getIsoLocation().y;
+		int r, g, b;
+		if (unit.second->getPlayer() == 0)
+		{
+
+			r = 0, g = 255, b = 0;
+		}
+		else
+		{
+			r = 255, g = 0, b = 0;
+
+		}
+		int xLoc = startLocX + ((x - y) * widthPixels / 2);
+		int yLoc = startLocY - ((x + y) * heightPixels / 4);
+		for (int i = 0; i<widthPixels; i++)
+		{
+			for (int n = -(i / 2); n <= i / 2; n++)
+			{
+				pixelBuffer[(yLoc + n) * mMiniMapImage->TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
+			}
+
+		}
+		for (int i = widthPixels; i<widthPixels * 2; i++)
+		{
+			int negativeValue = i - widthPixels;
+			for (int n = -((widthPixels - negativeValue) / 2); n <= (widthPixels - negativeValue) / 2; n++)
+			{
+				pixelBuffer[(yLoc + n) * mMiniMapImage->TellWidth() + xLoc + i - widthPixels / 2] = (unsigned int)((r << 0) | (g << 8) | (b << 16) | (255 << 24));
 			}
 		}
 	}
 
-	
-
-	guiTex->loadFromMemory(mPixelBuffer, CEGUI::Sizef(Image.TellWidth(), Image.TellHeight()), CEGUI::Texture::PF_RGBA);
+	guiTex->loadFromMemory(pixelBuffer, CEGUI::Sizef(mMiniMapImage->TellWidth(), mMiniMapImage->TellHeight()), CEGUI::Texture::PF_RGBA);
 
 	//// put the texture in an image
-
+	delete pixelBuffer;
 	const CEGUI::Rectf rect(CEGUI::Vector2f(0.0f, 0.0f), guiTex->getOriginalDataSize());
 	image->setTexture(guiTex);
 	image->setArea(rect);
@@ -319,6 +562,35 @@ bool GameGUI::toggleGameMenu(int n_bActivate)
 	}
 
 	return m_bMenuUp;
+}
+
+bool GameGUI::mouseAction(int button, int action)
+{
+	injectMouseAction(button, action);
+	return true;
+}
+
+bool GameGUI::keyAction(int key, int scancode, int action)
+{
+	if (m_bBlockInput)
+	{
+		return false;
+	}
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		if (toggleGameMenu(2))
+		{
+			m_Control->setPause(true);
+		}
+		else
+		{
+			m_Control->setPause(false);
+		}
+
+	if (checkScreenMoveKey(key, action))
+	{
+		return true;
+	}
 }
 
 bool GameGUI::onSelectUnit(const CEGUI::EventArgs& e)

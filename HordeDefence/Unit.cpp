@@ -35,7 +35,7 @@ Unit::Unit(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type
 	setSize(type.getSize());
 	setAnimation(type.getAnimation());
 	setRace(type.getName());
-	setClassType("Knight");
+	setClassType(type.getClass());
 	setStatus(IDLE);
 	getAnimation()->setAnimation("idle", 0.3);
 
@@ -318,7 +318,7 @@ void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& z
 			float y = mBoundingBox.mRadius  * sinf(theta);//calculate the y component 
 
 
-			glVertex3f(mScreenLocation.x, mScreenLocation.y, 1.0f);//output vertex 
+			glVertex3f(x - y, (x + y) * 0.5, 1.0f);//output vertex 
 
 		}
 		glEnd();

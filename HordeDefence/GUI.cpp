@@ -1,10 +1,11 @@
 #include "GUI.h"
 #include "Control.h"
+#include "ImageButton.h"
 CEGUI::OpenGL3Renderer* GUI::m_renderer = nullptr;
 
 GUI::GUI()
 {
-
+	mImageCount = 0;
 }
 GUI::~GUI()
 {
@@ -40,6 +41,13 @@ void GUI::init(const std::string& resourceDirectory) {
 	m_context = &CEGUI::System::getSingleton().createGUIContext(m_renderer->getDefaultRenderTarget());
 	m_root = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "root");
 	m_context->setRootWindow(m_root);
+
+	// add default texture so newly created buttons have something to use even if not visible
+	string texPath = "..\\HordeDefenceArt\\Units\\portraits\\Default.png";
+	CEGUI::Texture* text = createTexture("Default");
+	text->loadFromFile(texPath, "Units");
+
+	mTextures["Default"] = text;
 }
 
 void GUI::destroy() {
@@ -71,9 +79,25 @@ CEGUI::Window* GUI::createWidget(const std::string& type, const glm::vec4& destR
 	return newWindow;
 }
 
+shared_ptr<ImageButton> GUI::createImageButton(const glm::vec4& vec, const string& buttonName, const string& texture)
+{
+	string imageName = "Image" + std::to_string(mImageCount);
+	CEGUI::BasicImage* image = (CEGUI::BasicImage*)(&CEGUI::ImageManager::getSingleton().create("BasicImage", imageName));
+
+	CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("TaharezLook/ImageButton",
+		vec, glm::vec4(0.0f), buttonName));
+
+	ImageButton btn(mTextures[texture], image, button, imageName);
+
+	shared_ptr<ImageButton> imageBtn =std::make_shared<ImageButton>(btn);
+	mImageCount++;
+	return imageBtn;
+
+}
+
 CEGUI::Texture* GUI::createTexture(string texture)
 {
-	return &m_renderer->createTexture("MyCEGUITextureName");
+	return &m_renderer->createTexture(texture);
 }
 
 void GUI::destroyWidget(const std::string& name) {
@@ -157,7 +181,7 @@ void GUI::decreaseZoomFactor(float inZoomDecrease)
 
 void GUI::changeXScreenLoc(float inXScreenLoc)
 {
-	if ((m_xScreenLoc + inXScreenLoc) > -50 && (m_xScreenLoc + inXScreenLoc) < 50)
+	if ((m_xScreenLoc + inXScreenLoc) > -70 && (m_xScreenLoc + inXScreenLoc) < 70)
 	{
 		m_xScreenLoc += inXScreenLoc;
 	}
@@ -165,7 +189,7 @@ void GUI::changeXScreenLoc(float inXScreenLoc)
 }
 void GUI::changeYScreenLoc(float inYScreenLoc)
 {
-	if ((m_yScreenLoc + inYScreenLoc) < -20 && (m_yScreenLoc + inYScreenLoc) > -80)
+	if ((m_yScreenLoc + inYScreenLoc) < -20 && (m_yScreenLoc + inYScreenLoc) > -106)
 	{
 		m_yScreenLoc += inYScreenLoc;
 	}

@@ -9,6 +9,7 @@
 #include "UnitType.h"
 #include "GameMath.h"
 #include "Collision.h"
+#include "AIController.h"
 
 using std::map;
 
@@ -27,10 +28,10 @@ public:
 	map<std::pair< int, int >, shared_ptr<Tile>>& getTiles(void) { return mTiles; }
 
 	void addTile(Tile inTile);
-	void addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit);
-	void addHumanCharacter(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType, const string& nWeapon, const string& nArmor, const string& nOffhand, const int& isPlayerUnit);
-	void addBasicUnit(const float& xLoc, const float& yLoc, const float& zDepth, const int& nUnitType, const int& isPlayerUnit);
-	void addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth);
+	bool addUnit(shared_ptr<Unit> nUnit, const int& isPlayerUnit);
+	int addHumanCharacter(const float& xLoc, const float& yLoc, const float& zDepth, const string& nUnitType, const string& nWeapon, const string& nArmor, const string& nOffhand, const int& isPlayerUnit, const string& nUnitClass = "");
+	int addBasicUnit(const float& xLoc, const float& yLoc, const float& zDepth, const string& nUnitType, const int& isPlayerUnit, const string& nUnitClass = "");
+	bool addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth);
 	void deleteUnit(int nUnitID);
 
 	virtual void update(float nSeconds);
@@ -60,6 +61,10 @@ public:
 
 	int getMapWidth() { return mMapWidth; }
 	int getMapHeight() { return mMapHeight; }
+
+	std::vector<string> getUnitTypes();
+	std::vector<string> getUnitTypeClasses(const string& nUnitType);
+	UnitType getUnitType(const string& nUnitType, const string& nUnitClass);
 protected:
 	shared_ptr<gridVector> mAstarGrid;
 private:
@@ -72,7 +77,8 @@ private:
 	std::map<int, std::shared_ptr<Unit>> mAllUnits;
 	std::map<int, std::shared_ptr<Unit>> mSelectedUnits;
 	std::vector<std::shared_ptr<GameObject>> mGameObjects;
-	std::vector<shared_ptr<UnitType>> mUnitTypes;
+	std::map<string,std::map<string,shared_ptr<UnitType>>> mUnitTypes;
+	std::vector<Vector3D> mSpawnLocations;
 
 	int mMapWidth;
 	int mMapHeight;
@@ -85,9 +91,10 @@ private:
 	// Allow view to know selection has been updated
 	bool mSelectionChanged;
 	// delta time 
-	double currentTime;
+	double mCurrentTime;
 
 	// System modules
 	std::shared_ptr<Collision> mCollisionSytem;
+	AIController* mAIController;
 };
 

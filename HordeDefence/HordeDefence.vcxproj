@@ -82,6 +82,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Action.cpp" />
+    <ClCompile Include="AIController.cpp" />
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Armor.cpp" />
     <ClCompile Include="Attack.cpp" />
@@ -100,6 +101,7 @@
     <ClCompile Include="GUI.cpp" />
     <ClCompile Include="HumanCharacter.cpp" />
     <ClCompile Include="Idle.cpp" />
+    <ClCompile Include="ImageButton.cpp" />
     <ClCompile Include="Input.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="LoadingScreen.cpp" />
@@ -136,14 +138,18 @@
     <ClCompile Include="TmxLoader\TmxTileset.cpp" />
     <ClCompile Include="TmxLoader\TmxUtil.cpp" />
     <ClCompile Include="Unit.cpp" />
+    <ClCompile Include="UnitInfoButton.cpp" />
+    <ClCompile Include="UnitInfoPanel.cpp" />
     <ClCompile Include="UnitType.cpp" />
     <ClCompile Include="Vector3D.cpp" />
     <ClCompile Include="View.cpp" />
+    <ClCompile Include="Wave.cpp" />
     <ClCompile Include="Weapon.cpp" />
     <ClCompile Include="worldCreation.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Action.h" />
+    <ClInclude Include="AIController.h" />
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Armor.h" />
     <ClInclude Include="Attack.h" />
@@ -165,6 +171,7 @@
     <ClInclude Include="GUI.h" />
     <ClInclude Include="HumanCharacter.h" />
     <ClInclude Include="Idle.h" />
+    <ClInclude Include="ImageButton.h" />
     <ClInclude Include="Input.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="LoadingScreen.h" />
@@ -203,9 +210,12 @@
     <ClInclude Include="TmxLoader\TmxTileset.h" />
     <ClInclude Include="TmxLoader\TmxUtil.h" />
     <ClInclude Include="Unit.h" />
+    <ClInclude Include="UnitInfoButton.h" />
+    <ClInclude Include="UnitInfoPanel.h" />
     <ClInclude Include="UnitType.h" />
     <ClInclude Include="Vector3D.h" />
     <ClInclude Include="View.h" />
+    <ClInclude Include="Wave.h" />
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="worldCreation.h" />
   </ItemGroup>
