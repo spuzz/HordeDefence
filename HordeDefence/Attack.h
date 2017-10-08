@@ -1,16 +1,17 @@
 #pragma once
 #include "Action.h"
-#include "MoveToUnit.h"
+#include "MoveToInRange.h"
+
 class Attack :
 	public Action
 {
 public:
-	Attack(Unit*  nActor, GameObject*   nTarget);
+	Attack(Unit*  nActor, shared_ptr<Unit> nTarget);
 	virtual ~Attack();
 
 	bool update(float seconds);
 	bool mAttacking;
 	float mAttackCD;
-	MoveToUnit mMoveToTarget;
+	MoveToInRange* mMoveToTarget;
 };
 

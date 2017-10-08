@@ -1,8 +1,7 @@
 #pragma once
 #include "Action.h"
-#include "Unit.h"
 #include "Attack.h"
-
+#include "MoveTo.h"
 class AttackMove :
 	public Action
 {
@@ -13,5 +12,8 @@ public:
 
 private:
 	Vector3D mTargetLoc;
+	Attack* mAttack;
+	MoveTo* mMoveTo;
+	bool changedTarget;
 };
 

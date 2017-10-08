@@ -48,6 +48,7 @@ void textureLoader::loadUnits()
 		createTexture(unitTextures,token , fileLocation);
 	}
 	createTexture(unitTextures, "Orc", "..\\HordeDefenceArt\\Units\\Male\\Orc\\Orc.png");
+	createTexture(unitTextures, "Goblin", "..\\HordeDefenceArt\\Units\\Male\\Goblin\\goblin.png");
 	createTexture(unitTextures, "Skeleton", "..\\HordeDefenceArt\\Units\\Male\\Skeleton\\Skeleton.png");
 	createTexture(unitTextures, "Zombie", "..\\HordeDefenceArt\\Units\\Male\\Zombie\\Zombie.png");
 	createTexture(unitTextures, "Teleporter", "..\\HordeDefenceArt\\Units\\Teleporter\\EnemyGoal\\teleporter-effect-var-4.png");
@@ -55,6 +56,9 @@ void textureLoader::loadUnits()
 	createTexture(unitTextures, "HealthBarFrame", "..\\HordeDefenceArt\\HealthBar\\EmptyBar.png");
 	createTexture(unitTextures, "GreenHealthBar", "..\\HordeDefenceArt\\HealthBar\\GreenBar.png");
 	createTexture(unitTextures, "RedHealthBar", "..\\HordeDefenceArt\\HealthBar\\RedBar.png");
+
+	createTexture(projTextures, "Arrow", "..\\HordeDefenceArt\\Units\\Projectiles\\projectiles.png");
+	createTexture(projTextures, "Fireball", "..\\HordeDefenceArt\\Units\\Projectiles\\fireball.png");
 }
 
 void textureLoader::loadMaps()
@@ -152,6 +156,14 @@ std::vector<GLuint> textureLoader::retrieveUnitTexture(string race, bool gender)
 	retreivedTxtrs.push_back(unitTextures.at(race));
 	return retreivedTxtrs;
 }
+
+std::vector<GLuint> textureLoader::retrieveProjectileTexture(string name) const
+{
+	std::vector<GLuint> retreivedTxtrs;
+	retreivedTxtrs.push_back(projTextures.at(name));
+	return retreivedTxtrs;
+}
+
 
 textureLoader::~textureLoader()
 {

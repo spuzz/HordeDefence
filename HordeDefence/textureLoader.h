@@ -22,6 +22,7 @@ public:
 	std::vector<GLuint> retrieveMapTexture() { return  mapTexture; }
 	std::vector<GLuint> retrieveUnitTexture(string race, bool gender, string unitClass, string weapon, string armor,string offhand) const;
 	std::vector<GLuint> retrieveUnitTexture(string race, bool gender) const;
+	std::vector<GLuint> retrieveProjectileTexture(string name) const;
 	virtual void setCurrentTexture(const GLuint& nTxtr) { mCurrentTexture = nTxtr; }
 	virtual const GLuint& getCurrentTexture() { return mCurrentTexture;  }
 	virtual ~textureLoader();
@@ -36,6 +37,7 @@ private:
 	GLuint nextTextureID;
 	std::vector<GLuint>	mapTexture;			// Storage For 1 Texture
 	std::map<string, GLuint> unitTextures;
+	std::map<string, GLuint> projTextures;
 
 	GLuint mCurrentTexture;
 };

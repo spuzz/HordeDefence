@@ -31,8 +31,7 @@ worldCreation::worldCreation(Model* inModel)
 
 						int trap = 0;
 					}
-					int walkable = map->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
-					Tile tile(tileCount, GameMath::Vector3D(width - 1 - x, height - 1 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), walkable);
+					Tile tile(tileCount, GameMath::Vector3D(width - 1 - x, height - 1 - y, tileLayer->GetZOrder()), map->GetTileset(0)->GetTileWidth(), map->GetTileset(0)->GetTileHeight(), 1);
 					//tile.SetTexture(inView->getTextureLoader()->retrieveMapTexture());
 					tile.setWidthInTiles(widthInTiles);
 					tile.setHeightInTiles(heightInTiles);

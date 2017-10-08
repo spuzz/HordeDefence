@@ -1,11 +1,11 @@
 #pragma once
 #include "Action.h"
-#include "Unit.h"
+
 class MoveToUnit :
 	public Action
 {
 public:
-	MoveToUnit(Unit*  nActor, GameObject* nTarget);
+	MoveToUnit(Unit*  nActor, shared_ptr<Unit> nTarget);
 	virtual ~MoveToUnit();
 
 	bool update(float seconds);

@@ -4,7 +4,7 @@ class HumanCharacter :
 	public Unit
 {
 public:
-	HumanCharacter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, const int& nGameObjectID);
+	HumanCharacter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, std::map<string,ProjectileType> nProjTypes, const int& nGameObjectID);
 	virtual ~HumanCharacter();
 
 	virtual std::vector<GLuint> GetTextures(textureLoader& txtrLoader);

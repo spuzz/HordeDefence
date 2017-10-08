@@ -1,37 +1,45 @@
 #include "AttackMove.h"
+#include "Unit.h"
 
 
-
-AttackMove::AttackMove(Unit*  nActor, const Vector3D& nTarget) : Action(nActor, nullptr)
+AttackMove::AttackMove(Unit*  nActor, const Vector3D& nTarget) : Action(nActor)
 {
 	mActor->getAnimation()->setAnimation("move", 0.5);
+	mMoveTo = new MoveTo(mActor, nTarget);
 	mTargetLoc = nTarget;
+	changedTarget = false;
+	mAttack = nullptr;
 }
 
 
 
 bool AttackMove::update(float seconds)
 {
-	if (mActor->getTargetUnit() != nullptr)
-	{
-		return true;
-	}
+
 	shared_ptr<Unit> unit = mActor->getNearestEnemyUnit(8);
 	if (unit != nullptr)
 	{
-		mActor->newTarget(unit);
-		mActor->setAction(shared_ptr<Action>(new Attack(mActor, mActor->getTargetUnit().get())));
+		if (mActor->getTargetUnit() == nullptr ||  mActor->getTargetUnit()->getObjectID() != unit->getObjectID())
+		{
+			changedTarget = true;
+			mAttack = new Attack(mActor, unit);
+		}
+		mAttack->update(seconds);
 	}
 	else
 	{
-		Vector3D moveVec(mActor->getIsoLocation() + (mActor->findDirection()*mActor->getMovement()*seconds));
-		mActor->move(moveVec);
-		if (GameMath::GameMath::pointToCircle(mActor->getTarget(), mActor->getBoundingBox()))
+		if (changedTarget == true)
+		{
+			mMoveTo = new MoveTo(mActor,mTargetLoc);
+			changedTarget = false;
+		}
+		if (mMoveTo->update(seconds) == true)
 		{
 			return true;
 		}
-		
 	}
+
+
 	return false;
 }
 

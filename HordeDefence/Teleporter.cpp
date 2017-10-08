@@ -2,9 +2,10 @@
 #include "Dying.h"
 
 
-Teleporter::Teleporter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, const int& nGameObjectID) : Unit(inAstarMap, inLocation, type, nGameObjectID)
+Teleporter::Teleporter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, std::map<string,ProjectileType> nProjTypes, const int& nGameObjectID) : Unit(inAstarMap, inLocation, type, nProjTypes, nGameObjectID)
 {
 	getAnimation()->setAnimation("idle", 0.6);
+	setTargetable(false);
 }
 
 void Teleporter::hit(const float& nDamage, Unit* nHitBy)
@@ -18,8 +19,15 @@ void Teleporter::hit(const float& nDamage, Unit* nHitBy)
 		setTargetable(false);
 		setAction(shared_ptr<Action>(new Dying(this)));
 	}
-	nHitBy->setDead(true);
-	nHitBy->setTargetable(false);
+
+}
+
+void Teleporter::attack(shared_ptr<Unit> enemy)
+{
+	enemy->setDead(true);
+	enemy->setTargetable(false);
+	hit(1, this);
+
 }
 
 void Teleporter::draw(const float& xScreenLoc, const float& yScreenLoc, const float& zScreenLoc, textureLoader& txtrLoader)

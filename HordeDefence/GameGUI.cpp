@@ -1,7 +1,7 @@
 #include "GameGUI.h"
 #include "Control.h"
 #include <sstream>
-
+#include <string>
 bool comparator(const std::shared_ptr<GameObject> &a, const std::shared_ptr<GameObject> &b) {
 	return (a->getIsoDepth() < b->getIsoDepth());
 }
@@ -13,7 +13,7 @@ GameGUI::GameGUI()
 	m_xScreenLoc = 0;
 	m_yScreenLoc = -40;
 	m_zScreenLoc = -220;
-	m_viewZoomFactor = 255.0f;
+	m_viewZoomFactor = 200.0f;
 	m_yIncreasing = 0;
 	m_xIncreasing = 0;
 
@@ -39,7 +39,7 @@ void GameGUI::update()
 	GLuint currentTxtr = 0;
 	std::vector<std::shared_ptr<GameObject>>::iterator& it = m_model->getGameObjects().begin();
 	std::vector<std::shared_ptr<GameObject>>& GameObjects = m_model->getGameObjects();
-	TopologicalGraphSort(GameObjects);
+    TopologicalGraphSort(GameObjects);
 	std::sort(GameObjects.begin(), GameObjects.end(), comparator);
 	int count = 0;
 	for (it = GameObjects.begin(); it != GameObjects.end(); ++it)
@@ -51,6 +51,12 @@ void GameGUI::update()
 		else {
 			(*it)->draw(m_xScreenLoc, m_yScreenLoc, m_zScreenLoc, *m_txtrLoader.get());
 		}
+	}
+	std::vector<Projectile>::iterator& it2 = m_model->getProjectiles().begin();
+	std::vector<Projectile>& projectiles = m_model->getProjectiles();
+	for (it2 = projectiles.begin(); it2 != projectiles.end(); ++it2)
+	{
+		it2->Draw(m_xScreenLoc, m_yScreenLoc, m_zScreenLoc, *m_txtrLoader.get());
 	}
 	draw();
 	glLoadIdentity();
@@ -67,6 +73,8 @@ void GameGUI::update()
 	{
 		updateSelection(false);
 	}
+
+	updateGameInfo();
 	//updateMinimap();
 }
 
@@ -105,7 +113,7 @@ void GameGUI::loadGameGUI()
 	CEGUI::FrameWindow* unitList = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
 		glm::vec4(0.21f, 0.82f, 0.38f, 0.18f), glm::vec4(0.0f), "UnitList"));
 
-	CEGUI::FrameWindow* unitInfo = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
+	CEGUI::FrameWindow* gameInfo = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
 		glm::vec4(0.61f, 0.82f, 0.18f, 0.18f), glm::vec4(0.0f), "UnitInfo"));
 
 
@@ -116,12 +124,15 @@ void GameGUI::loadGameGUI()
 	CEGUI::FrameWindow* groupActions = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/AltStaticImage",
 		glm::vec4(0.81f, 0.71f, 0.18f, 0.28f), glm::vec4(0.0f), "GroupActions"));
 
+
+
 	guiTex = createTexture("Texture");
 	image = (CEGUI::BasicImage*)(&CEGUI::ImageManager::getSingleton().create("BasicImage", "RTTImage"));
 
 	loadTextures();
 	createSelectedUnitButtons();
-	
+	createGameInfoIcons();
+
 	mUnitInfoPanel = shared_ptr<UnitInfoPanel>(new UnitInfoPanel(this,0.35,0.82));
 	mUnitInfoPanel->setVisible(false);
 	m_bMenuUp = false;
@@ -169,8 +180,6 @@ bool GameGUI::loadCommands()
 
 void GameGUI::loadTextures()
 {
-
-
 	for (auto type : m_model->getUnitTypes())
 	{
 		for (auto unitClass : m_model->getUnitTypeClasses(type))
@@ -203,33 +212,6 @@ void GameGUI::loadTextures()
 	mTextures["Icons"] = text;
 }
 
-void GameGUI::createSelectedUnitButtons()
-{
-	// 1 button for single unit selection - twice size
-	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f, 0.835f, 0.10f, 0.12f), "unit" + std::to_string(0), "Default");
-	shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "emptyhealthbar" + std::to_string(0), "EmptyBar");
-	shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "healthbar" + std::to_string(0), "GreenBar");
-
-	UnitInfoButton infoBtn(btn, btn2, btn3);
-	infoBtn.setEnabled(false);
-	mUnitButtons.push_back(infoBtn);
-
-
-
-	for (int a = 0; a < 6; a++)
-	{
-		shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.835f, 0.05f, 0.06f), "unit" + std::to_string(a + 1), "Default");
-
-		shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "emptyhealthbar" + std::to_string(a + 1), "EmptyBar");
-		shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "healthbar" + std::to_string(a + 1), "GreenBar");
-
-		UnitInfoButton infoBtn(btn, btn2, btn3);
-		infoBtn.setEnabled(false);
-		mUnitButtons.push_back(infoBtn);
-	}
-
-
-}
 
 
 bool GameGUI::updateSelection(const bool& selectionChanged)
@@ -318,54 +300,6 @@ bool GameGUI::updateSelection(const bool& selectionChanged)
 		}
 	}
 
-
-	
-	//for (int a = 0; a < mUnitIDs.size(); a++)
-	//{
-	//	std::stringstream ss;
-	//	ss << mUnitIDs[a];
-	//	string str = ss.str();
-	//	string unitButtonName = "UnitButton" + str;
-	//	string unitHealthName = "UnitHealth" + str;
-	//	string unitHealthBackground = "UnitHealthBackground" + str;
-	//	destroyWidget(unitButtonName);
-	//	destroyWidget(unitHealthName);
-	//	destroyWidget(unitHealthBackground);
-	//}
-
-	//mUnitIDs.clear();
-	//int count = 0;
-	//for (auto unit : m_model->getSelectedUnits())
-	//{
-	//	mUnitIDs.push_back(unit.second->getObjectID());
-	//	std::stringstream ss;
-	//	ss << unit.second->getObjectID();
-	//	string str = ss.str();
-	//	string unitButtonName = "UnitButton" + str;
-	//	string unitHealthName = "UnitHealth" + str;
-	//	string unitHealthBackground = "UnitHealthBackground" + str;
-	//	CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("TaharezLook/ImageButton",
-	//		glm::vec4(0.22f + (count*0.05f), 0.835f, 0.05f, 0.06f), glm::vec4(0.0f), unitButtonName));
-	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
-	//	
-	//	unitImage->setTexture(unitText);
-	//	button->setProperty("NormalImage", "unitImage");
-	//	button->setProperty("HoverImage", "unitImage");
-	//	button->setProperty("PushedImage", "unitImage");
-	//	button->setProperty("DisabledImage", "unitImage");
-	//	button->setVisible(false);
-
-	//	button = static_cast<CEGUI::PushButton*>(createWidget("TaharezLook/ImageButton",
-	//		glm::vec4(0.22f + (count*0.05f), 0.895f, 0.05f, 0.01f), glm::vec4(0.0f), unitHealthBackground));
-	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
-	//	button->setProperty("NormalImage", "unitImage");
-	//	button->setProperty("HoverImage", "unitImage");
-	//	button->setProperty("PushedImage", "unitImage");
-	//	button->setProperty("DisabledImage", "unitImage");
-
-	//	button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
-	//	count++;
-	//}
 	return true;
 }
 
@@ -500,6 +434,59 @@ bool GameGUI::updateMinimap()
 	return true;
 	//testButton->setProperty("HoverImage", "RTTImage");
 }
+
+bool GameGUI::updateGameInfo()
+{
+	return true;
+}
+
+bool GameGUI::createGameInfoIcons()
+{
+	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.62f, 0.835f, 0.03f, 0.06f), "Lives", "Default");
+
+
+	CEGUI::DefaultWindow* livesInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.655f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "LivesInfo");
+
+	livesInfo->setText(std::to_string(m_model->mLives));
+
+	btn = createImageButton(glm::vec4(0.70f, 0.835f, 0.03f, 0.06f), "Gold", "Default");
+
+
+	CEGUI::DefaultWindow* goldInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.735f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "GoldInfo");
+
+	goldInfo->setText(std::to_string(m_model->mGold));
+	return true;
+}
+
+void GameGUI::createSelectedUnitButtons()
+{
+	// 1 button for single unit selection - twice size
+	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f, 0.835f, 0.10f, 0.12f), "unit" + std::to_string(0), "Default");
+	shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "emptyhealthbar" + std::to_string(0), "EmptyBar");
+	shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f, 0.955f, 0.10f, 0.02f), "healthbar" + std::to_string(0), "GreenBar");
+
+	UnitInfoButton infoBtn(btn, btn2, btn3);
+	infoBtn.setEnabled(false);
+	mUnitButtons.push_back(infoBtn);
+
+
+
+	for (int a = 0; a < 6; a++)
+	{
+		shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.835f, 0.05f, 0.06f), "unit" + std::to_string(a + 1), "Default");
+
+		shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "emptyhealthbar" + std::to_string(a + 1), "EmptyBar");
+		shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "healthbar" + std::to_string(a + 1), "GreenBar");
+
+		UnitInfoButton infoBtn(btn, btn2, btn3);
+		infoBtn.setEnabled(false);
+		mUnitButtons.push_back(infoBtn);
+	}
+
+}
+
 
 /*  n_bActivate
 0 = only close
@@ -734,11 +721,7 @@ void GameGUI::TopologicalGraphSort(std::vector<std::shared_ptr<GameObject>>& nGa
 			{
 				GameObject& b = *tmpGameObjects[j];
 
-				if (b.getIsoLocation().x== 41 && b.getIsoLocation().y == 63)
-				{
-					int trap = 1;
-				}
-				if (b.getMin().x < a.getMax().x && b.getMin().y < a.getMax().y && b.getMin().z <= a.getMax().z)
+				if (b.getMin().x > a.getMin().x && b.getMin().y > a.getMin().y && b.getMin().z <= a.getMax().z)
 				{
 					if (b.getMin().z == a.getMax().z && (b.getMax().y > a.getMax().x))
 						continue;

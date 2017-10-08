@@ -14,6 +14,8 @@
 #include "UnitType.h"
 #include "Action.h"
 #include "Idle.h"
+#include "Projectile.h"
+#include "ProjectileType.h"
 
 enum direction { WEST, NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST };
 enum statuses { IDLE, ATTACK, DEFEND, MOVE, ATTACKMOVE };
@@ -25,7 +27,7 @@ class Unit : public GameObject
 {
 public:
 
-	Unit(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, const int& nGameObjectID);
+	Unit(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, std::map<string,ProjectileType> nProjTypes, const int& nGameObjectID);
 	virtual ~Unit();
 
 	// Unit Info functions
@@ -39,8 +41,13 @@ public:
 	void setAttackSpeed(float inAttackSpeed) { mAttackSpeedPerSecond = inAttackSpeed; }
 	void setRace(string inRace) { mRace = inRace; }
 	void setClassType(string inType) { mClassType = inType; }
-	void setPath(locationVector inPath) { mPath = inPath; }
+	void setPath(locationFloatVector inPath) { mPath = inPath; }
+	locationFloatVector smoothPath(locationFloatVector inPath);
 	void setPlayer(const int& nPlayer) { mPlayer = nPlayer; }
+	void setTotalFrames(float nTotalFrames) { mTotalFrames = nTotalFrames; }
+	void setAttackType(const string& nAttackType) { mAttackType = nAttackType; }
+	void setAttackDamage(float nAttackDamage) { mAttackDamage = nAttackDamage; }
+	void setArmor(float nArmor) { mArmor = nArmor; }
 
 	const direction getDirection() const { return mFacing; }
 	const string getClassType() const { return mClassType; }
@@ -52,16 +59,22 @@ public:
 	const float getMaxHealth() const { return mMaxHealth; }
 	const bool getGender() const { return mGender; }
 	const float getAttackSpeed() const { return mAttackSpeedPerSecond;  }
-	locationVector getPath()  { return mPath; }
-	locationVector& getChangeablePath() { return mPath; }
+	locationFloatVector getPath()  { return mPath; }
+	locationFloatVector& getChangeablePath() { return mPath; }
 	void setAnimation(Animation inAnim) { mAnimation = std::make_shared<Animation>(inAnim); }
 	std::shared_ptr<Animation> getAnimation() const { return mAnimation; }
 	GameMath::Circle getBoundingBox() { return mBoundingBox;  }
 	int getPlayer() { return mPlayer;  }
-	
+	float getTotalFrames() const { return mTotalFrames; }
+	string getAttackType() { return mAttackType; }
+	float getAttackDamage() const { return mAttackDamage; }
+	int getArmor() { return mArmor; }
+
+
+	locationFloatVector ConvertAndAddMidPoints(locationVector nPath);
 
 	// Update functions
-	virtual void attack();
+	virtual void attack(shared_ptr<Unit> enemy);
 	virtual void attackMove(GameMath::Vector3D inTarget);
 	virtual void update(float nSeconds);
 	virtual void move(Vector3D nMoveVec);
@@ -72,13 +85,17 @@ public:
 	virtual std::vector<GLuint> GetTextures(textureLoader& txtrLoader);
 	Vector3D getTarget() { return mTarget; }
 	shared_ptr<Unit> getTargetUnit() { return mTargetUnit; }
+	std::vector<Projectile> getProjectiles() { return mProjectiles;  }
+	void clearProjectiles() { mProjectiles.clear(); }
 
-	void setTarget(GameMath::Vector3D inTarget){ mTarget = inTarget; }
+	void setTarget(GameMath::Vector3D inTarget);
+	void setTargetUnit(shared_ptr<Unit> nUnit);
 	void newTarget(GameMath::Vector3D inTarget);
 	void newTarget(shared_ptr<Unit> nUnit);
 	void clearTargetUnit() { mTargetUnit = nullptr; }
 	void findPath();
 	virtual Vector3D findDirection();
+	float getAttackCD() { return mActionCD; }
 
 	const bool getStatusChanged() const { return mStatusChanged; }
 	void setStatusChanged(bool inStatusChanged) { mStatusChanged = inStatusChanged; }
@@ -98,6 +115,7 @@ public:
 	virtual void hit(const float& nDamage,Unit* nHitBy);
 	virtual void damage(const float& nDamage);
 	virtual void heal(const float& nHeal);
+
 	// Equipment function
 	const Weapon getEquippedWeapon() { return mEquippedWeapon; }
 	const Armor getEquippedArmor() { return mEquippedArmor; }
@@ -134,10 +152,13 @@ protected:
 	float mCurrentHealth;
 	float mSize;
 	float mRange;
+	float mTotalFrames;
 	bool mGender;
 	string mRace;
 	string mClassType;
-
+	string mAttackType;
+	float mAttackDamage;
+	int mArmor;
 	// Player variable
 	// 0 = Human  Player
 	int mPlayer;
@@ -158,6 +179,9 @@ protected:
 	std::vector<Buff> mBuffs;
 	std::vector<Debuff> mDebuffs;
 
+	std::vector<Projectile> mProjectiles;
+	std::map<string,ProjectileType> mProjectilesTypes;
+
 	Weapon mEquippedWeapon;
 	Armor mEquippedArmor;
 	Offhand mEquippedOffhand;
@@ -165,20 +189,24 @@ protected:
 	bool mCanUseEquipment;
 
 	// Path Finding variables
-	locationVector mPath;
+	locationFloatVector mPath;
 	shared_ptr<gridVector> mAstarGrid;
 	shared_ptr<Collision> mCollisionSystem;
+	float mActionCD;
 };
 
 class AstarHandler : public AstarLifeCycleHandler
 {
 public:
-	AstarHandler(locationVector &path) : result(path) {};
-	locationVector& result;
+	AstarHandler(Unit* nUnit) { mUnit = nUnit;  }
+	Unit* mUnit;
 
 	void successOnPathFinding(locationVector path) {
-		result = path;
+		locationFloatVector floatPath = (mUnit->ConvertAndAddMidPoints(path));
+		floatPath = mUnit->smoothPath(floatPath);
+		mUnit->setPath(floatPath);
 	}
+
 
 	void errorOnPathFinding() {
 

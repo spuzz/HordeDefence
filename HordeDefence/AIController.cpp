@@ -26,23 +26,28 @@ void AIController::Update(float nGameTimeSeconds)
 	}
 	if (mWaves[0].mWaveTime <= nGameTimeSeconds)
 	{
-		for (auto unit : mWaves[0].mUnits)
+		
+		if (mWaves[0].mUnits.size() > 0)
 		{
-			std::vector<Vector3D> possibleLocations = GetPossibleLocations(mSpawnLocations[0]);
-			for (int a = 0; a <= unit.second; a++) 
+			std::pair<std::pair<std::string, std::string>, int> unit = *(mWaves[0].mUnits.begin());
+			Vector3D loc = mSpawnLocations[10];
+			int unitID = mModel->addBasicUnit(loc.x, loc.y, 3, unit.first.first, 1, unit.first.second);
+			if (unitID != -1)
 			{
-				srand(time(NULL));
-				int randomIndex = rand() % possibleLocations.size();
-				int unitID;
-				while ((unitID = mModel->addBasicUnit(mMapWidth - possibleLocations[randomIndex].x, mMapHeight - possibleLocations[randomIndex].y, 0, unit.first.first, 1, unit.first.second)) != -1)
+				mModel->getAllUnits()[unitID]->attackMove(Vector3D(64, 64, 0));
+				mWaves[0].mUnits.begin()->second = mWaves[0].mUnits.begin()->second - 1;
+				if (mWaves[0].mUnits.begin()->second == 0)
 				{
-					mModel->getAllUnits()[unitID]->attackMove(Vector3D(64, 64, 0));
-					randomIndex = rand() % possibleLocations.size();
+					mWaves[0].mUnits.erase(mWaves[0].mUnits.begin());
 				}
+	
 			}
-			
 		}
-		mWaves.erase(mWaves.begin());
+		else 
+		{
+			mWaves.erase(mWaves.begin());
+		}
+		
 	}
 }
 

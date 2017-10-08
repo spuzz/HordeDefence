@@ -43,7 +43,7 @@ void GUI::init(const std::string& resourceDirectory) {
 	m_context->setRootWindow(m_root);
 
 	// add default texture so newly created buttons have something to use even if not visible
-	string texPath = "..\\HordeDefenceArt\\Units\\portraits\\Default.png";
+	CEGUI::String texPath = "..\\HordeDefenceArt\\Units\\portraits\\Default.png";
 	CEGUI::Texture* text = createTexture("Default");
 	text->loadFromFile(texPath, "Units");
 

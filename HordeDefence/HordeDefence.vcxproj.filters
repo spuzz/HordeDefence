@@ -240,6 +240,12 @@
     <ClCompile Include="Wave.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Projectile.cpp">
+      <Filter>Source Files\Model\GameObjects</Filter>
+    </ClCompile>
+    <ClCompile Include="ProjectileType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="View.h">
@@ -450,6 +456,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Wave.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Projectile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ProjectileType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

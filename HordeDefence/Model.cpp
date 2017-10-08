@@ -17,19 +17,41 @@ Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 	fileName = "..\\HordeDefenceArt\\Units\\Units.xml";
 	mCurrentTime = 0;
 	ParseUnitXml(fileName);
+	fileName = "..\\HordeDefenceArt\\Units\\Projectiles.xml";
+	ParseProjXml(fileName);
 	worldCreation newWorld(this);
-	mCollisionSytem = std::shared_ptr<Collision>(new Collision(mTiles));
+	mCollisionSytem = std::shared_ptr<Collision>(new Collision(mAstarGrid));
 
+	mLives = 20;
+	mGold = 1000;
+
+	mTeleporterID = addTeleporter(64, 64, 3);
+	getAllUnits()[mTeleporterID]->setMaxHealth(mLives);
+	getAllUnits()[mTeleporterID]->setCurrentHealth(mLives);
 	mAIController = new AIController(std::shared_ptr<Model>(this),"MapOne", mSpawnLocations,mMapWidth,mMapHeight);
-	//addHumanCharacter(45, 41, 3, "Human", "greatstaff", "clothes", "", 0,"Knight");
-	//addHumanCharacter(43, 42, 3, 0, "sword", "steel", "shield",0);
+	int unitID = addHumanCharacter(60, 70, 3, "Human", "greatstaff", "clothes", "", 0,"Mage");
+	//addHumanCharacter(62, 74, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(60, 72, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(58, 70, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(62, 72, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+
+	//addHumanCharacter(70, 60, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+	//addHumanCharacter(70, 58, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(68, 56, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(72, 60, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	//addHumanCharacter(68, 58, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+
+	//mProjectiles.push_back(Projectile(Vector3D(67, 67,0), (--mAllUnits.end())->second, 10.0f, mProjTypes["Fireball"], 0));
+ //   unitID = addHumanCharacter(40, 44, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
+	//getAllUnits()[unitID]->attackMove(Vector3D(46, 44, 0));
+
+	//addHumanCharacter(60, 60, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
 	//addBasicUnit(46, 35, 3, 1,1);
 	//addBasicUnit(34, 34, 3, "Orc", 1, "Warrior");
-	//addTeleporter(45, 46, 3);
-
+	
+	
 	mSelectionChanged = false;
-
-
+	mGameOver = false;
 }
 
 
@@ -65,6 +87,10 @@ UnitType Model::getUnitType(const string& nUnitType, const string& nUnitClass)
 
 void Model::update(float nSeconds)
 {
+	if (mGameOver == true)
+	{
+		return;
+	}
 	if (nSeconds > 0.0166)
 	{
 		nSeconds = 0.0166;
@@ -84,6 +110,27 @@ void Model::update(float nSeconds)
 			it->second->update(nSeconds);
 		}
 		
+		for (auto proj : it->second->getProjectiles())
+		{
+			mProjectiles.push_back(proj);
+		}
+
+		it->second->clearProjectiles();
+	}
+
+	std::vector<Projectile> tmpProj;
+	for (auto proj : mProjectiles)
+	{
+		if (proj.Update(nSeconds) == false)
+		{
+			tmpProj.push_back(proj);
+		}	
+	}
+	mProjectiles = tmpProj;
+
+	if (getAllUnits()[mTeleporterID]->isDead())
+	{
+		mGameOver = true;
 	}
 
 	for (auto id : deletableIds)
@@ -197,8 +244,13 @@ void Model::createMap()
 					const Tmx::MapTile tileTest = tmxMap->GetTileLayers()[i - 1]->GetTile(y, x);
 					int gid = tmxMap->GetTileLayers()[i - 1]->GetTileId(y, x);
 					int walkable = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
-					if (walkable != 1)
+					if (x == 64 && y == 65)
 					{
+						int trap = 0;
+					}
+					if (walkable == 0)
+					{
+						
 						mAstarGrid->at(width - x - 1)[height - y - 1] = -1;
 					}
 					else
@@ -216,7 +268,7 @@ void Model::createMap()
 					int spawnPoint = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Spawn Point");
 					if (spawnPoint != 0)
 					{
-						mSpawnLocations.push_back(Vector3D(x, y, 0));
+						mSpawnLocations.push_back(Vector3D(width - x - 1 + 0.5, height - y - 1 + 0.5, 0));
 					}
 				}
 			}
@@ -225,65 +277,6 @@ void Model::createMap()
 
 }
 
-
-void Model::ParseUnitXml(const string& inFileName)
-{
-
-	tinyxml2::XMLDocument doc;
-	if (doc.LoadFile(inFileName.c_str()) == tinyxml2::XML_NO_ERROR)
-	{
-		tinyxml2::XMLElement* mainXMLElement = doc.FirstChildElement("horde_defence")->FirstChildElement("units");
-		tinyxml2::XMLElement* unitsElement = mainXMLElement->FirstChildElement("unit");
-		while (unitsElement != nullptr)
-		{
-			tinyxml2::XMLElement* unitElement = unitsElement->FirstChildElement("class");
-			std::map < string, shared_ptr<UnitType>> units;
-			
-			while (unitElement != nullptr)
-			{
-
-				shared_ptr<UnitType> unit(new UnitType());
-				unit->setName(unitsElement->Attribute("value"));
-				unit->setClass(unitElement->Attribute("value"));
-				tinyxml2::XMLElement* element = unitElement->FirstChildElement("movement_speed");
-				unit->setMoveSpeed(std::stof(element->GetText()));
-				element = unitElement->FirstChildElement("attack_speed");
-				unit->setAttackSpeed(std::stof(element->GetText()));
-				element = unitElement->FirstChildElement("size");
-				unit->setSize(std::stof(element->GetText()));
-				element = unitElement->FirstChildElement("hp");
-				unit->setHitPoints(std::stof(element->GetText()));
-				element = unitElement->FirstChildElement("range");
-				unit->setRange(std::stof(element->GetText()));
-				tinyxml2::XMLElement* animations = unitElement->FirstChildElement("animations");
-				element = animations->FirstChildElement("animation");
-				units[unit->getClass()] = unit;
-				string name;
-				int initFrame, frames;
-				Animation anim;
-				while (element != nullptr)
-				{
-
-
-					tinyxml2::XMLElement* nameElem = element->FirstChildElement("name");
-					name = nameElem->GetText();
-					tinyxml2::XMLElement* initElem = element->FirstChildElement("start");
-					initFrame = atoi(initElem->GetText());
-					tinyxml2::XMLElement* framesElem = element->FirstChildElement("frames");
-					frames = atoi(framesElem->GetText());
-					anim.addAnimation(name, initFrame, frames);
-					element = element->NextSiblingElement();
-				}
-				unit->setAnimation(anim);
-				unitElement = unitElement->NextSiblingElement();
-			}
-			mUnitTypes[unitsElement->Attribute("value")] = units;
-			unitsElement = unitsElement->NextSiblingElement();
-		}
-	}
-
-	
-}
 
 void Model::addTile(Tile inTile)
 {
@@ -316,7 +309,7 @@ int Model::addHumanCharacter(const float& xLoc, const float& yLoc, const float& 
 	}
 
 	mGameObjectID++;
-	HumanCharacter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(),mGameObjectID);
+	HumanCharacter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(),mProjTypes,mGameObjectID);
 	unit.SetEquipment(nWeapon, nArmor, nOffhand);
 	
 	shared_ptr<Unit> newUnit = std::make_shared<HumanCharacter>(unit);
@@ -343,7 +336,7 @@ int Model::addBasicUnit(const float& xLoc, const float& yLoc, const float& zDept
 		return -1;
 	}
 	mGameObjectID++;
-	Unit unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(), mGameObjectID);
+	Unit unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes[nUnitType][nUnitClass].get(),mProjTypes, mGameObjectID);
 
 	shared_ptr<Unit> newUnit = std::make_shared<Unit>(unit);
 	if (addUnit(newUnit, isPlayerUnit) == true)
@@ -357,12 +350,21 @@ int Model::addBasicUnit(const float& xLoc, const float& yLoc, const float& zDept
 
 }
 
-bool Model::addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth)
+int Model::addTeleporter(const float& xLoc, const float& yLoc, const float& zDepth)
 {
 	mGameObjectID++;
-	Teleporter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes["Teleporter"][""].get(), mGameObjectID);
+	Teleporter unit(mAstarGrid, Vector3D(xLoc, yLoc, zDepth), *mUnitTypes["Teleporter"][""].get(),mProjTypes, mGameObjectID);
 
 	shared_ptr<Unit> newUnit = std::make_shared<Teleporter>(unit);
+	if (addUnit(newUnit, 0) == true)
+	{
+		return mGameObjectID;
+	}
+	else
+	{
+		return -1;
+	}
+
 	return addUnit(newUnit, 0);
 	
 
@@ -406,6 +408,114 @@ void Model::deleteUnit(int nUnitID)
 	mCollisionSytem->cleanID(nUnitID);
 }
 
+void Model::ParseUnitXml(const string& inFileName)
+{
+
+	tinyxml2::XMLDocument doc;
+	if (doc.LoadFile(inFileName.c_str()) == tinyxml2::XML_NO_ERROR)
+	{
+		tinyxml2::XMLElement* mainXMLElement = doc.FirstChildElement("horde_defence")->FirstChildElement("units");
+		tinyxml2::XMLElement* unitsElement = mainXMLElement->FirstChildElement("unit");
+		while (unitsElement != nullptr)
+		{
+			tinyxml2::XMLElement* unitElement = unitsElement->FirstChildElement("class");
+			std::map < string, shared_ptr<UnitType>> units;
+
+			while (unitElement != nullptr)
+			{
+
+				shared_ptr<UnitType> unit(new UnitType());
+				unit->setName(unitsElement->Attribute("value"));
+				unit->setClass(unitElement->Attribute("value"));
+				tinyxml2::XMLElement* element = unitElement->FirstChildElement("movement_speed");
+				unit->setMoveSpeed(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("attack_speed");
+				unit->setAttackSpeed(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("size");
+				unit->setSize(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("hp");
+				unit->setHitPoints(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("attack_type");
+				unit->setAttackType(element->GetText());
+				element = unitElement->FirstChildElement("attack_damage");
+				unit->setAttackDamage(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("armor");
+				unit->setArmor(std::stof(element->GetText()));
+				element = unitElement->FirstChildElement("range");
+				unit->setRange(std::stof(element->GetText()));
+				tinyxml2::XMLElement* animations = unitElement->FirstChildElement("animations");
+				element = animations->FirstChildElement("total_frames");
+				unit->setTotalFrames(std::stof(element->GetText()));
+				element = animations->FirstChildElement("animation");
+				units[unit->getClass()] = unit;
+				string name;
+				int initFrame, frames;
+				Animation anim;
+				while (element != nullptr)
+				{
+
+
+					tinyxml2::XMLElement* nameElem = element->FirstChildElement("name");
+					name = nameElem->GetText();
+					tinyxml2::XMLElement* initElem = element->FirstChildElement("start");
+					initFrame = atoi(initElem->GetText());
+					tinyxml2::XMLElement* framesElem = element->FirstChildElement("frames");
+					frames = atoi(framesElem->GetText());
+					anim.addAnimation(name, initFrame, frames);
+					element = element->NextSiblingElement();
+				}
+				unit->setAnimation(anim);
+				unitElement = unitElement->NextSiblingElement();
+			}
+			mUnitTypes[unitsElement->Attribute("value")] = units;
+			unitsElement = unitsElement->NextSiblingElement();
+		}
+	}
+
+
+}
+
+void Model::ParseProjXml(const string& inFileName)
+{
+
+	tinyxml2::XMLDocument doc;
+	if (doc.LoadFile(inFileName.c_str()) == tinyxml2::XML_NO_ERROR)
+	{
+		tinyxml2::XMLElement* mainXMLElement = doc.FirstChildElement("horde_defence")->FirstChildElement("projectiles");
+		tinyxml2::XMLElement* projElement = mainXMLElement->FirstChildElement("projectile");
+		while (projElement != nullptr)
+		{
+			ProjectileType proj;
+			proj.setName(projElement->Attribute("value"));;
+			tinyxml2::XMLElement* element = projElement->FirstChildElement("movement_speed");
+			proj.setMoveSpeed(std::stof(element->GetText()));
+			element = projElement->FirstChildElement("attack_type");
+			proj.setAttackType(element->GetText());
+			element = projElement->FirstChildElement("size");
+			proj.setSize(std::stof(element->GetText()));
+			element = projElement->FirstChildElement("aoe");
+			proj.setAreaOfEffect(std::stof(element->GetText()));
+
+			tinyxml2::XMLElement* animations = projElement->FirstChildElement("animations");
+			element = animations->FirstChildElement("total_frames");
+			proj.setTotalFrames(std::stof(element->GetText()));
+			element = animations->FirstChildElement("animation");
+			string name;
+			int initFrame, frames;
+			Animation anim;
+			tinyxml2::XMLElement* nameElem = element->FirstChildElement("name");
+			name = nameElem->GetText();
+			tinyxml2::XMLElement* initElem = element->FirstChildElement("start");
+			initFrame = atoi(initElem->GetText());
+			tinyxml2::XMLElement* framesElem = element->FirstChildElement("frames");
+			frames = atoi(framesElem->GetText());
+			anim.addAnimation(name, initFrame, frames);
+			proj.setAnimation(anim);
+			mProjTypes[proj.getName()] = proj;
+			projElement = projElement->NextSiblingElement();
+		}
+	}
+}
 
 Model::~Model()
 {

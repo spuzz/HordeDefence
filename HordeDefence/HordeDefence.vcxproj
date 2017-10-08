@@ -51,13 +51,13 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>$(SolutionDir)\\Astar\include;$(SolutionDir)\deps\Include;$(WindowsSDK_IncludePath)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)\Astar\include;$(SolutionDir)\deps\Include;$(WindowsSDK_IncludePath)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)\deps\GUI\Debug;$(SolutionDir)\Astar\lib;$(SolutionDir)\packages\glfw.3.1.2\build\native\lib\v140\x64\static</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CEGUIBase-0_d.lib;CEGUIOpenGLRenderer-0_d.lib;Astar.lib;kernel32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\bin\Debug;$(SolutionDir)\deps\GUI\Debug;$(SolutionDir)\packages\glfw.3.1.2\build\native\lib\v140\x64\static</AdditionalLibraryDirectories>
+      <AdditionalDependencies>Astar.lib;CEGUIBase-0_d.lib;CEGUIOpenGLRenderer-0_d.lib;kernel32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -75,8 +75,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalLibraryDirectories>$(SolutionDir)\deps\GUI\Release;$(SolutionDir)\Astar\lib;$(SolutionDir)\packages\glfw.3.1.2\build\native\lib\v140\x64\static</AdditionalLibraryDirectories>
-      <AdditionalDependencies>CEGUIBase-0.lib;CEGUIOpenGLRenderer-0.lib;Astar.lib;kernel32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)\deps\GUI\Release;$(SolutionDir)\bin\Release;$(SolutionDir)\packages\glfw.3.1.2\build\native\lib\v140\x64\static</AdditionalLibraryDirectories>
+      <AdditionalDependencies>CEGUIBase-0.lib;CEGUIOpenGLRenderer-0.lib;kernel32.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
@@ -112,6 +112,8 @@
     <ClCompile Include="MoveToInRange.cpp" />
     <ClCompile Include="MoveToUnit.cpp" />
     <ClCompile Include="Offhand.cpp" />
+    <ClCompile Include="Projectile.cpp" />
+    <ClCompile Include="ProjectileType.cpp" />
     <ClCompile Include="Rectangle.cpp" />
     <ClCompile Include="SettingsGUI.cpp" />
     <ClCompile Include="GameObject.cpp" />
@@ -182,6 +184,8 @@
     <ClInclude Include="MoveToInRange.h" />
     <ClInclude Include="MoveToUnit.h" />
     <ClInclude Include="Offhand.h" />
+    <ClInclude Include="Projectile.h" />
+    <ClInclude Include="ProjectileType.h" />
     <ClInclude Include="Rectangle.h" />
     <ClInclude Include="SettingsGUI.h" />
     <ClInclude Include="GameObject.h" />
@@ -221,6 +225,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Astar\Astar\Astar.vcxproj">
+      <Project>{7aa31eef-c3d1-40eb-bafa-16fb9d9963d9}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

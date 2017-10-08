@@ -1,17 +1,20 @@
 #include "Attack.h"
+#include "Unit.h"
 
 
-
-Attack::Attack(Unit*  nActor, GameObject*   nTarget) : Action(nActor, nTarget), mMoveToTarget(nActor, nTarget)
+Attack::Attack(Unit*  nActor, shared_ptr<Unit> nTarget) : Action(nActor)
 {
+	mActor->setTargetUnit(nTarget);
+	mMoveToTarget = new MoveToInRange(mActor,nTarget);
 	mAttacking = false;
-	mAttackCD = 0.8;
+	mAttackCD = 0.3;
 }
 
 bool Attack::update(float seconds)
 {
 	if (mAttacking)
 	{
+		
 		if (mAttackCD > 0)
 		{
 			mAttackCD -= seconds;
@@ -19,9 +22,10 @@ bool Attack::update(float seconds)
 		}
 		else
 		{
-			mAttackCD = 0.8;
+			mLocked = false;
+			mAttackCD = 0.3;
 			mAttacking = false;
-			mActor->getAnimation()->setAnimation("move", 0.5);
+			mActor->getAnimation()->setAnimation("idle", 0.5);
 		}
 	}
 
@@ -31,20 +35,16 @@ bool Attack::update(float seconds)
 	}
 	if (!mActor->getTargetUnit()->isTargetable())
 	{
-		mActor->clearTargetUnit();
 		return true;
 	}
-	if (mAttacking == false && mMoveToTarget.update(seconds))
+	if (mAttacking == false && mMoveToTarget->update(seconds))
 	{
-		mActor->getAnimation()->setAnimation("attack", 0.8);
-		mActor->getTargetUnit()->hit(30, mActor);
+		mActor->attack(mActor->getTargetUnit());
 		mAttacking = true;
 	}
-
-	
-
 	return false;
 }
+
 
 Attack::~Attack()
 {

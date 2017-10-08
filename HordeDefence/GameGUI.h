@@ -29,8 +29,10 @@ public:
 	bool updateSelection(const bool& selectionChanged);
 	bool onSelectUnit(const CEGUI::EventArgs& e);
 	bool updateMinimap();
+	bool updateGameInfo();
 	bool loadMinimap();
 	bool loadCommands();
+	bool createGameInfoIcons();
 
 private:
 	void loadGameGUI();

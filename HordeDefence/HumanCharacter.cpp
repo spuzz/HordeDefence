@@ -2,7 +2,7 @@
 
 
 
-HumanCharacter::HumanCharacter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, const int& nGameObjectID) : Unit(inAstarMap,inLocation,type,nGameObjectID)
+HumanCharacter::HumanCharacter(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type, std::map<string,ProjectileType> nProjTypes, const int& nGameObjectID) : Unit(inAstarMap,inLocation,type, nProjTypes,nGameObjectID)
 {
 	mCanUseEquipment = true;
 }

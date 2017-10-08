@@ -2,16 +2,8 @@
 <AISpawnCtrl>
 	<Events>
 		<Wave>
-			<Time>5</Time>
-			<Unit type = "Orc" classType="Warrior" amount = "2"/>
-		</Wave>
-		<Wave>
-			<Time>15</Time>
-			<Unit type = "Orc" classType="Warrior" amount = "2"></Unit>	
-		</Wave>
-		<Wave>
-			<Time>25</Time>
-			<Unit type = "Orc" classType="Warrior" amount = "2"></Unit>
+			<Time>1</Time>
+			<Unit type = "Orc" classType="Warrior" amount = "1"/>
 		</Wave>
 	</Events>
 </AISpawnCtrl>

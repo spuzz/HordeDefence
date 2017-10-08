@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<horde_defence>
+	<projectiles>
+		<projectile value = "Fireball">
+			<movement_speed>10</movement_speed>
+			<attack_type>range</attack_type>
+			<size>0.4</size>
+			<aoe>0.0</aoe>
+			<animations>
+				<total_frames>8</total_frames>
+				<animation>
+					<name>move</name>
+					<start>0</start>
+					<frames>8</frames>
+				</animation>
+			</animations>
+		</projectile>
+		<projectile value = "Arrow">
+			<movement_speed>15</movement_speed>
+			<attack_type>magic</attack_type>
+			<size>0.1</size>
+			<aoe>0.0</aoe>
+			<animations>
+				<total_frames>1</total_frames>
+				<animation>
+					<name>move</name>
+					<start>0</start>
+					<frames>1</frames>
+					</animation>
+			</animations>
+		</projectile>
+	</projectiles>
+</horde_defence>

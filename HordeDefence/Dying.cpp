@@ -4,10 +4,10 @@
 
 
 
-Dying::Dying(Unit*  nActor) : Action(nActor, nullptr)
+Dying::Dying(Unit*  nActor) : Action(nActor)
 {
-	mActor->getAnimation()->setAnimation("death", 1.5);
-	mDeathTimer = 1.5;
+	mActor->getAnimation()->setAnimation("death", 0.2);
+	mDeathTimer = 0.2;
 }
 
 bool Dying::update(float seconds)
