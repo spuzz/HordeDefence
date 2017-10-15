@@ -30,7 +30,7 @@ void AIController::Update(float nGameTimeSeconds)
 		if (mWaves[0].mUnits.size() > 0)
 		{
 			std::pair<std::pair<std::string, std::string>, int> unit = *(mWaves[0].mUnits.begin());
-			Vector3D loc = mSpawnLocations[10];
+			Vector3D loc = GetNextSpawn();
 			int unitID = mModel->addBasicUnit(loc.x, loc.y, 3, unit.first.first, 1, unit.first.second);
 			if (unitID != -1)
 			{

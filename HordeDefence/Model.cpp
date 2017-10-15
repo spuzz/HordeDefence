@@ -30,16 +30,16 @@ Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 	getAllUnits()[mTeleporterID]->setCurrentHealth(mLives);
 	mAIController = new AIController(std::shared_ptr<Model>(this),"MapOne", mSpawnLocations,mMapWidth,mMapHeight);
 	int unitID = addHumanCharacter(60, 70, 3, "Human", "greatstaff", "clothes", "", 0,"Mage");
-	//addHumanCharacter(62, 74, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(60, 72, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(58, 70, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(62, 72, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+	addHumanCharacter(62, 74, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(60, 72, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(58, 70, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(62, 72, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
 
-	//addHumanCharacter(70, 60, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
-	//addHumanCharacter(70, 58, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(68, 56, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(72, 60, 3, "Human", "sword", "steel", "shield", 0, "Knight");
-	//addHumanCharacter(68, 58, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+	addHumanCharacter(70, 60, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
+	addHumanCharacter(70, 58, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(68, 56, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(72, 60, 3, "Human", "sword", "steel", "shield", 0, "Knight");
+	addHumanCharacter(68, 58, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
 
 	//mProjectiles.push_back(Projectile(Vector3D(67, 67,0), (--mAllUnits.end())->second, 10.0f, mProjTypes["Fireball"], 0));
  //   unitID = addHumanCharacter(40, 44, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
@@ -128,6 +128,7 @@ void Model::update(float nSeconds)
 	}
 	mProjectiles = tmpProj;
 
+	mLives = getAllUnits()[mTeleporterID]->getCurrentHealth();
 	if (getAllUnits()[mTeleporterID]->isDead())
 	{
 		mGameOver = true;
@@ -137,6 +138,7 @@ void Model::update(float nSeconds)
 	{
 		deleteUnit(id);
 	}
+
 }
 
 void Model::selectOnLocation(GameMath::Rectangle rect)
@@ -218,7 +220,7 @@ void Model::actionOnLocation(float x, float y)
 		{
 			for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
 			{
-				itSelected->second->newTarget(Vector3D(x, y, 0));
+				itSelected->second->attackMove(Vector3D(x, y, 0));
 			}
 		}
 	}

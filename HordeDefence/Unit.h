@@ -19,6 +19,7 @@
 
 enum direction { WEST, NORTHWEST, NORTH, NORTHEAST, EAST, SOUTHEAST, SOUTH, SOUTHWEST };
 enum statuses { IDLE, ATTACK, DEFEND, MOVE, ATTACKMOVE };
+enum avoidanceDirection { FORWARD, LEFT, RIGHT };
 using std::pair;
 using std::string;
 
@@ -112,6 +113,7 @@ public:
 	bool collide(const GameMath::Vector3D& point);
 
 	shared_ptr<Unit> getNearestEnemyUnit(const int& nRange);
+	bool findRayCollision(const Vector3D& direction, const float& targetDistance, Vector3D& rayStart, const float& raylength, std::vector<shared_ptr<Unit>>& units, Vector3D& collisionLoc, Vector3D& objectLoc, float& scale, bool& isTile);
 	virtual void hit(const float& nDamage,Unit* nHitBy);
 	virtual void damage(const float& nDamage);
 	virtual void heal(const float& nHeal);
@@ -166,7 +168,7 @@ protected:
 	// Update variables
 	bool mSelected;
 	bool mStatusChanged;
-
+	avoidanceDirection mAvoidDirection;
 	// Set to true to auto attack units when moving through path
 	bool mAttackMove;
 

@@ -33,6 +33,7 @@ public:
 	bool loadMinimap();
 	bool loadCommands();
 	bool createGameInfoIcons();
+	void gameOverMenu();
 
 private:
 	void loadGameGUI();
@@ -45,6 +46,7 @@ private:
 	void loadTextures();
 
 	bool m_bMenuUp;
+	bool m_bGameOver;
 	bool m_bBlockInput;
 	CEGUI::Texture* guiTex;
 	CEGUI::Texture* unitText;
@@ -57,7 +59,8 @@ private:
 	std::vector<UnitInfoButton> mUnitButtons;
 	shared_ptr<UnitInfoPanel> mUnitInfoPanel;
 
-
+	CEGUI::DefaultWindow* goldInfo;
+	CEGUI::DefaultWindow* livesInfo;
 	BMP AnImage;
 	unsigned int *mPixelBuffer;
 	

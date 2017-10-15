@@ -64,6 +64,7 @@ public:
 	// Game Info
 	int mLives;
 	int mGold;
+	bool mGameOver;
 
 	// Main Methods
 	virtual void update(float nSeconds);
@@ -109,7 +110,7 @@ private:
 
 	// delta time 
 	double mCurrentTime;
-	bool mGameOver;
+	
 	// System modules
 	std::shared_ptr<Collision> mCollisionSytem;
 	AIController* mAIController;

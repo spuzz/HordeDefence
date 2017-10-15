@@ -15,5 +15,6 @@ private:
 	Attack* mAttack;
 	MoveTo* mMoveTo;
 	bool changedTarget;
+	float attackMoveCD;
 };
 

@@ -22,6 +22,8 @@ GameGUI::GameGUI()
 	AnImage.SetSize(640, 480);
 	// Set its color depth to 32-bits
 	AnImage.SetBitDepth(32);
+
+	m_bGameOver = false;
 }
 
 void GameGUI::start()
@@ -31,6 +33,11 @@ void GameGUI::start()
 
 void GameGUI::update()
 {
+
+	if (m_model->mGameOver)
+	{
+		gameOverMenu();
+	}
 	changeXScreenLoc(m_xIncreasing);
 	changeYScreenLoc(m_yIncreasing);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);	// Clear The Screen And The Depth Buffer
@@ -169,12 +176,6 @@ bool GameGUI::loadCommands()
 		glm::vec4(0.9266f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command9"));
 	command9->setText("Ability 3");
 	command9->setVisible(false);
-	//command->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onSelectUnit, this));
-	//unitImage->setTexture(unitText);
-	//command->setProperty("NormalImage", "unitImage");
-	//command->setProperty("HoverImage", "unitImage");
-	//command->setProperty("PushedImage", "unitImage");
-	//command->setProperty("DisabledImage", "unitImage");
 	return true;
 }
 
@@ -299,6 +300,7 @@ bool GameGUI::updateSelection(const bool& selectionChanged)
 			count++;
 		}
 	}
+
 
 	return true;
 }
@@ -437,6 +439,8 @@ bool GameGUI::updateMinimap()
 
 bool GameGUI::updateGameInfo()
 {
+	livesInfo->setText(std::to_string(m_model->mLives));
+	goldInfo->setText(std::to_string(m_model->mGold));
 	return true;
 }
 
@@ -445,15 +449,14 @@ bool GameGUI::createGameInfoIcons()
 	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.62f, 0.835f, 0.03f, 0.06f), "Lives", "Default");
 
 
-	CEGUI::DefaultWindow* livesInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+	livesInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
 		glm::vec4(0.655f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "LivesInfo");
 
 	livesInfo->setText(std::to_string(m_model->mLives));
 
 	btn = createImageButton(glm::vec4(0.70f, 0.835f, 0.03f, 0.06f), "Gold", "Default");
 
-
-	CEGUI::DefaultWindow* goldInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+	goldInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
 		glm::vec4(0.735f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "GoldInfo");
 
 	goldInfo->setText(std::to_string(m_model->mGold));
@@ -479,6 +482,17 @@ void GameGUI::createSelectedUnitButtons()
 
 		shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "emptyhealthbar" + std::to_string(a + 1), "EmptyBar");
 		shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.895f, 0.05f, 0.01f), "healthbar" + std::to_string(a + 1), "GreenBar");
+
+		UnitInfoButton infoBtn(btn, btn2, btn3);
+		infoBtn.setEnabled(false);
+		mUnitButtons.push_back(infoBtn);
+	}
+	for (int a = 0; a < 6; a++)
+	{
+		shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.9f, 0.05f, 0.06f), "unit" + std::to_string(a + 6 + 1), "Default");
+
+		shared_ptr<ImageButton> btn2 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.965f, 0.05f, 0.01f), "emptyhealthbar" + std::to_string(a + 6 + 1), "EmptyBar");
+		shared_ptr<ImageButton> btn3 = createImageButton(glm::vec4(0.22f + (a * 0.05f), 0.965f, 0.05f, 0.01f), "healthbar" + std::to_string(a + 6 + 1), "GreenBar");
 
 		UnitInfoButton infoBtn(btn, btn2, btn3);
 		infoBtn.setEnabled(false);
@@ -549,6 +563,40 @@ bool GameGUI::toggleGameMenu(int n_bActivate)
 	}
 
 	return m_bMenuUp;
+}
+
+
+void GameGUI::gameOverMenu()
+{
+
+	m_bBlockInput = true;
+	if (m_bGameOver == false)
+	{
+		CEGUI::FrameWindow* background = (CEGUI::FrameWindow*)createWidget("OgreTray/AltStaticImage",
+			glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec4(0.0f), "gameoverBackground");
+		background->setProperty(background->RiseOnClickEnabledPropertyName, "false");
+		CEGUI::FrameWindow* menuFrame = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/FrameWindow",
+			glm::vec4(0.4f, 0.3f, 0.2f, 0.34f), glm::vec4(0.0f), "gameovermenuFrame"));
+		menuFrame->setDisabled(true);
+
+		CEGUI::DefaultWindow*  mNameTextInfo = static_cast<CEGUI::DefaultWindow*>(createWidget("OgreTray/StaticText",
+			glm::vec4(0.45f, 0.32f, 0.18f, 0.15f), glm::vec4(0.0f), "gameover"));
+		mNameTextInfo->setText("GAME OVER");
+
+		CEGUI::PushButton* button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+			glm::vec4(0.41f, 0.52f, 0.18f, 0.05f), glm::vec4(0.0f), "gameoverQuitToMain"));
+
+		button->setText("Quit To Main Menu");
+		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&Control::mainMenu, &(*m_Control)));
+
+		button = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
+			glm::vec4(0.41f, 0.57f, 0.18f, 0.05f), glm::vec4(0.0f), "gameoverQuitToDesktop"));
+		button->setText("Quit To Desktop");
+		button->subscribeEvent(CEGUI::PushButton::EventClicked, CEGUI::Event::Subscriber(&GameGUI::onExitToDesktop, this));
+		m_bGameOver = true;
+	}
+
+
 }
 
 bool GameGUI::mouseAction(int button, int action)

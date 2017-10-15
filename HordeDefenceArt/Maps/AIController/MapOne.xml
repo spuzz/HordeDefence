@@ -3,7 +3,15 @@
 	<Events>
 		<Wave>
 			<Time>1</Time>
-			<Unit type = "Orc" classType="Warrior" amount = "1"/>
+			<Unit type = "Orc" classType="Warrior" amount = "15"/>
+		</Wave>
+		<Wave>
+			<Time>5</Time>
+			<Unit type = "Orc" classType="Warrior" amount = "10"/>
+		</Wave>
+		<Wave>
+			<Time>10</Time>
+			<Unit type = "Orc" classType="Warrior" amount = "16"/>
 		</Wave>
 	</Events>
 </AISpawnCtrl>

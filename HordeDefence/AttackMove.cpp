@@ -9,6 +9,7 @@ AttackMove::AttackMove(Unit*  nActor, const Vector3D& nTarget) : Action(nActor)
 	mTargetLoc = nTarget;
 	changedTarget = false;
 	mAttack = nullptr;
+	attackMoveCD = 0;
 }
 
 
@@ -19,10 +20,11 @@ bool AttackMove::update(float seconds)
 	shared_ptr<Unit> unit = mActor->getNearestEnemyUnit(8);
 	if (unit != nullptr)
 	{
-		if (mActor->getTargetUnit() == nullptr ||  mActor->getTargetUnit()->getObjectID() != unit->getObjectID())
+		if (mActor->getTargetUnit() == nullptr ||  mActor->getTargetUnit()->getObjectID() != unit->getObjectID() && attackMoveCD <= 0)
 		{
 			changedTarget = true;
 			mAttack = new Attack(mActor, unit);
+			attackMoveCD = 0.5;
 		}
 		mAttack->update(seconds);
 	}
@@ -38,7 +40,10 @@ bool AttackMove::update(float seconds)
 			return true;
 		}
 	}
-
+	if (attackMoveCD >= 0)
+	{
+		attackMoveCD = attackMoveCD - seconds;
+	}
 
 	return false;
 }

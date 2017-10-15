@@ -12,7 +12,7 @@ void Teleporter::hit(const float& nDamage, Unit* nHitBy)
 {
 
 	// Count how many units reach this goal
-	mCurrentHealth - 1;
+	mCurrentHealth = mCurrentHealth - 1;
 	if (mCurrentHealth <= 0)
 	{
 

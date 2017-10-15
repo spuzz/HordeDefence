@@ -48,6 +48,7 @@ Unit::Unit(shared_ptr<gridVector> inAstarMap, Vector3D inLocation, UnitType type
 	mCanUseEquipment = false;
 	mAttackMove = false;
 	mActionCD = 0;
+	mAvoidDirection = FORWARD;
 }
 
 
@@ -111,31 +112,31 @@ void Unit::move(Vector3D nMoveVec)
 		mBoundingBox.mLocation.y = mIsoLocation.y;
 		calcScreenLocation();
 	}
-	//else 
-	//{
-	//	float yMove = nMoveVec.y;
-	//	nMoveVec.y = getIsoLocation().y;
-	//	if (mCollisionSystem->CheckUnitCollision(getObjectID(), GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == 0 && mCollisionSystem->CheckTileCollision(GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == true)
-	//	{
-	//		
-	//		setIsoLocation(nMoveVec);
-	//		mBoundingBox.mLocation.x = mIsoLocation.x;
-	//		mBoundingBox.mLocation.y = mIsoLocation.y;
-	//		calcScreenLocation();
-	//	}
-	//	else
-	//	{
-	//		nMoveVec.y =  yMove;
-	//		nMoveVec.x = getIsoLocation().x;
-	//		if (mCollisionSystem->CheckUnitCollision(getObjectID(), GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == 0 && mCollisionSystem->CheckTileCollision(GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == true)
-	//		{
-	//			setIsoLocation(nMoveVec);
-	//			mBoundingBox.mLocation.x = mIsoLocation.x;
-	//			mBoundingBox.mLocation.y = mIsoLocation.y;
-	//			calcScreenLocation();
-	//		}
-	//	}
-	//}
+	else 
+	{
+		float yMove = nMoveVec.y;
+		nMoveVec.y = getIsoLocation().y;
+		if (mCollisionSystem->CheckUnitCollision(getObjectID(), GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == 0 && mCollisionSystem->CheckTileCollision(GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == true)
+		{
+			
+			setIsoLocation(nMoveVec);
+			mBoundingBox.mLocation.x = mIsoLocation.x;
+			mBoundingBox.mLocation.y = mIsoLocation.y;
+			calcScreenLocation();
+		}
+		else
+		{
+			nMoveVec.y =  yMove;
+			nMoveVec.x = getIsoLocation().x;
+			if (mCollisionSystem->CheckUnitCollision(getObjectID(), GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == 0 && mCollisionSystem->CheckTileCollision(GameMath::Circle(nMoveVec, getBoundingBox().mRadius), true) == true)
+			{
+				setIsoLocation(nMoveVec);
+				mBoundingBox.mLocation.x = mIsoLocation.x;
+				mBoundingBox.mLocation.y = mIsoLocation.y;
+				calcScreenLocation();
+			}
+		}
+	}
 
 
 	//setLocation(Vector3D(getIsoLocation().x - getIsoLocation().y, (getIsoLocation().x + getIsoLocation().y) * 0.5, 0));
@@ -195,6 +196,7 @@ void Unit::changeAnim(string anim)
 
 void Unit::setTarget(GameMath::Vector3D inTarget) 
 { 
+	mAvoidDirection = FORWARD;
 	if (mTarget.x != inTarget.x && mTarget.y != inTarget.y)
 	{
 		mTarget = inTarget;
@@ -203,6 +205,7 @@ void Unit::setTarget(GameMath::Vector3D inTarget)
 }
 void Unit::setTargetUnit(shared_ptr<Unit> nUnit) 
 { 
+	mAvoidDirection = FORWARD;
 	mTargetUnit = nUnit;
 	if (mTarget.x != nUnit->getIsoLocation().x && mTarget.y != nUnit->getIsoLocation().y)
 	{
@@ -214,11 +217,12 @@ void Unit::setTargetUnit(shared_ptr<Unit> nUnit)
 
 void Unit::newTarget(GameMath::Vector3D inTarget)
 {
-	setAction(shared_ptr<Action>(new MoveTo(this, getTarget())));
+	setAction(shared_ptr<Action>(new MoveTo(this, inTarget)));
 }
+
 void Unit::newTarget(shared_ptr<Unit> nUnit)
 {
-	setAction(shared_ptr<Action>(new Attack(this, mTargetUnit)));
+	setAction(shared_ptr<Action>(new Attack(this, nUnit)));
 }
 
 void Unit::attackMove(GameMath::Vector3D inTarget)
@@ -287,137 +291,159 @@ Vector3D Unit::findDirection()
 	}
 
 
-	if (target.x != -1)
+ 	if (target.x != -1)
 	{
+		bool foundLeftCollision = false;
+		bool foundRightCollision = false;
+		bool leftIsTile, rightIsTile;
+		Vector3D leftCollisionLoc, rightCollisionLoc, leftObjectLoc, rightObjectLoc;
+		float leftScale, rightScale;
+		float distance = Vector3D(abs(getIsoLocation().x - target.x), abs(getIsoLocation().y - target.y), 0).GetSquaredMagnitude();//(target - getIsoLocation()).GetSquaredMagnitude();
 		Vector3D direction = target - getIsoLocation();
-		Vector3D avoidForce(0, 0, 0);
 		direction.z = 0;
 		direction = direction.normalize();
-		float scale = 0;
-		std::vector<shared_ptr<Unit>> units = mCollisionSystem->getUnitsInRange(this->getObjectID(), GameMath::Circle(target, 12), 0, 0);
+		std::vector<shared_ptr<Unit>> units = mCollisionSystem->getUnitsInRange(this->getObjectID(), GameMath::Circle(mIsoLocation, 5), 0, 0);
 
-		GameMath::Vector3D closest(-1,-1,-1);
-		Vector3D result(-1, -1, -1);
-		float distance = Vector3D(abs(getIsoLocation().x - target.x), abs(getIsoLocation().y - target.y), 0).GetSquaredMagnitude();//(target - getIsoLocation()).GetSquaredMagnitude();
-		bool foundCollision = false;
-		Vector3D rightLineStart, rightLineEnd, leftLineStart, leftLineEnd;
-		Vector3D normal(direction.y, -direction.x, 0);
-		Vector3D oppNormal(-direction.y, direction.x, 0);
-		normal = normal.normalize();
-		oppNormal = oppNormal.normalize();
-		Vector3D normalTimesRadius(0, 0, 0);
-		Vector3D oppNormalTimesRadius(0, 0, 0);
-		normalTimesRadius = normal * (mBoundingBox.mRadius);
-		oppNormalTimesRadius = oppNormal * (mBoundingBox.mRadius);
+		Vector3D normalToCirc = Vector3D(-direction.y, direction.x, 0).normalize()*(mBoundingBox.mRadius);
+		Vector3D rayStart = Vector3D(getIsoLocation().x + normalToCirc.x, getIsoLocation().y + normalToCirc.y, 0);
+		foundLeftCollision = findRayCollision(direction, distance, rayStart, 3, units, leftCollisionLoc, leftObjectLoc, leftScale, leftIsTile);
 
-		rightLineStart = Vector3D(getIsoLocation().x + normalTimesRadius.x, getIsoLocation().y + normalTimesRadius.y, 0);
-		rightLineEnd = rightLineStart + direction * 3;
-		leftLineStart = Vector3D(getIsoLocation().x + oppNormalTimesRadius.x, getIsoLocation().y + oppNormalTimesRadius.y, 0);
-		leftLineEnd = leftLineStart + direction * 3;
-		for (auto unit : units)
+		normalToCirc = Vector3D(direction.y, -direction.x, 0).normalize()*(mBoundingBox.mRadius);
+		rayStart = Vector3D(getIsoLocation().x + normalToCirc.x, getIsoLocation().y + normalToCirc.y, 0);
+		foundRightCollision = findRayCollision(direction, distance, rayStart, 3, units, rightCollisionLoc, rightObjectLoc, rightScale, rightIsTile);
+		if (foundLeftCollision == false && foundRightCollision == false)
 		{
-			if (mTargetUnit == nullptr || (mTargetUnit->getObjectID() != unit->getObjectID()))
+			mAvoidDirection = FORWARD;
+			mDirection = direction;
+		}
+		else if (foundLeftCollision == true && foundRightCollision == true)
+		{
+			int leftOrRight;
+			float scale;
+			Vector3D avoidForce;
+			bool isTile;
+			if (leftScale > rightScale)
 			{
-				
-				if (GameMath::GameMath::lineToCircle(leftLineStart, leftLineEnd, unit->getBoundingBox(),result))
+				leftOrRight = 0;
+				isTile = leftIsTile;
+			}
+			else
+			{
+				leftOrRight = 1;
+				isTile = rightIsTile;
+			}
+
+			if (mAvoidDirection == FORWARD || isTile == true )
+			{
+				if (leftOrRight == 0)
 				{
-					foundCollision = true;
-					float curDistance = Vector3D(abs(leftLineStart.x - result.x), abs(leftLineStart.y - result.y), 0).GetSquaredMagnitude();
-					if (curDistance < distance)
-					{
-						foundCollision = true;
-						closest = result;
-						avoidForce = normal * 1;
-						scale = mBoundingBox.mRadius / sqrt(curDistance);
-						distance = curDistance;
-					}
-
-					//float curDistance = Vector3D(abs(getIsoLocation().x - unit->getIsoLocation().x), abs(getIsoLocation().y - unit->getIsoLocation().y), 0).GetSquaredMagnitude();
-					//if (curDistance < distance)
-					//{
-					//	//closest = Vector3D(unit->getBoundingBox().mLocation.x, unit->getBoundingBox().mLocation.y, 0);
-					//	closest = GameMath::GameMath::lineToCirclePoint(leftLineStart, leftLineEnd, unit->getBoundingBox());
-					//	distance = curDistance;
-
-					//}
+					Vector3D avoidDir = leftObjectLoc - getIsoLocation();
+					leftObjectLoc- getIsoLocation();
+					avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+					scale = leftScale;
+					mAvoidDirection = RIGHT;
 				}
-				if (GameMath::GameMath::lineToCircle(rightLineStart, rightLineEnd, unit->getBoundingBox(),result))
+				else
 				{
-					float curDistance = Vector3D(abs(rightLineStart.x - result.x), abs(rightLineStart.y - result.y), 0).GetSquaredMagnitude();
-					if (curDistance < distance)
-					{
-						foundCollision = true;
-						closest = result;
-						avoidForce = oppNormal * 1;
-						scale = mBoundingBox.mRadius / sqrt(curDistance);
- 						distance = curDistance;
-					}
-					
-					//float curDistance = Vector3D(abs(getIsoLocation().x - unit->getIsoLocation().x), abs(getIsoLocation().y - unit->getIsoLocation().y), 0).GetSquaredMagnitude();
-					//if (curDistance < distance)
-					//{
-					//	//closest = Vector3D(unit->getBoundingBox().mLocation.x, unit->getBoundingBox().mLocation.y, 0);
-					//	closest = GameMath::GameMath::lineToCirclePoint(rightLineStart, rightLineEnd, unit->getBoundingBox());
-					//	distance = curDistance;
-					//}
+					Vector3D avoidDir = rightObjectLoc - getIsoLocation();
+					rightObjectLoc - getIsoLocation();
+					avoidForce = Vector3D(-avoidDir.y, avoidDir.x, 0).normalize();
+					scale = rightScale;
+					mAvoidDirection = LEFT;
+				}
+				mDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+			}
+			else 
+			{
+				Vector3D leftDirection;
+				Vector3D rightDirection;
+				Vector3D avoidDir;
+				if (mAvoidDirection == LEFT)
+				{
+					avoidDir = leftObjectLoc - getIsoLocation();
+					leftObjectLoc - getIsoLocation();
+					avoidForce = Vector3D(-avoidDir.y, avoidDir.x, 0).normalize();
+					scale = leftScale;
+					leftDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+
+					avoidDir = rightObjectLoc - getIsoLocation();
+					rightObjectLoc - getIsoLocation();
+					avoidForce = Vector3D(-avoidDir.y, avoidDir.x, 0).normalize();
+					scale = rightScale;
+					rightDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+				}
+				else if (mAvoidDirection == RIGHT)
+				{
+					avoidDir = leftObjectLoc - getIsoLocation();
+					leftObjectLoc - getIsoLocation();
+					avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+					scale = leftScale;
+					leftDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+
+					avoidDir = rightObjectLoc - getIsoLocation();
+					rightObjectLoc - getIsoLocation();
+					avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+					scale = rightScale;
+					rightDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+				}
+
+ 				if ((rightDirection - direction.normalize()).GetSquaredMagnitude() > (leftDirection - direction.normalize()).GetSquaredMagnitude())
+				{
+					mDirection = rightDirection;
+				}
+				else
+				{
+					mDirection = leftDirection;
 				}
 			}
 
-		}
-		std::vector<Vector3D> tiles = mCollisionSystem->TilesUnderLine(leftLineStart.x, leftLineStart.y, leftLineEnd.x, leftLineEnd.y);
-		for (auto tile : tiles)
-		{
 			
-			if (mCollisionSystem->CheckTileCollision(tile, 0) == false)
-			{
-				foundCollision = true;
-				result = GameMath::GameMath::LineToRectPoint(leftLineStart, leftLineEnd, GameMath::Rectangle(tile, 1, 1));
-				float curDistance = Vector3D(abs(leftLineStart.x - result.x), abs(leftLineStart.y - result.y), 0).GetSquaredMagnitude();
-				if (curDistance < distance)
-				{
-					closest = result;
-					avoidForce = normal * 1;
-					distance = curDistance;
-					scale = 0.5*0.5 / sqrt(curDistance);
-				}
-
-			}
 		}
-
-		tiles = mCollisionSystem->TilesUnderLine(rightLineStart.x, rightLineStart.y, rightLineEnd.x, rightLineEnd.y);
-		for (auto tile : tiles)
+		else if (foundLeftCollision == true)
 		{
-			if (mCollisionSystem->CheckTileCollision(tile, 0) == false)
+			float scale;
+			Vector3D avoidForce;
+			if (mAvoidDirection == FORWARD || mAvoidDirection == RIGHT || leftIsTile == true)
 			{
-				foundCollision = true;
-				result = GameMath::GameMath::LineToRectPoint(rightLineStart, rightLineEnd, GameMath::Rectangle(tile, 1, 1));
-				float curDistance = Vector3D(abs(rightLineStart.x - result.x), abs(rightLineStart.y - result.y), 0).GetSquaredMagnitude();
-				if (curDistance < distance)
-				{
-					closest = result;
-					avoidForce = oppNormal * 1;
-					distance = curDistance;
-					scale = 0.5*0.5 / sqrt(curDistance);
-				}
+				Vector3D avoidDir = leftObjectLoc - getIsoLocation();
+				leftObjectLoc - getIsoLocation();
+				avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+				scale = leftScale;
+				mAvoidDirection = RIGHT;
 			}
+			else if (mAvoidDirection == LEFT)
+			{
+				Vector3D avoidDir = leftObjectLoc - getIsoLocation();
+				leftObjectLoc - getIsoLocation();
+				avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+				scale = leftScale;
+			}
+			mDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
 		}
+		else if (foundRightCollision == true)
+		{
+			float scale;
+			Vector3D avoidForce;
+			if (mAvoidDirection == FORWARD || mAvoidDirection == LEFT || leftIsTile == true)
+			{
+				Vector3D avoidDir = rightObjectLoc - getIsoLocation();
+				rightObjectLoc - getIsoLocation();
+				avoidForce = Vector3D(-avoidDir.y, avoidDir.x, 0).normalize();
+				scale = rightScale;
+				mAvoidDirection = LEFT;
+			}
+			else if (mAvoidDirection == RIGHT)
+			{
+				Vector3D avoidDir = rightObjectLoc - getIsoLocation();
+				rightObjectLoc - getIsoLocation();
+				avoidForce = Vector3D(avoidDir.y, -avoidDir.x, 0).normalize();
+				scale = rightScale;
+			}
 
-		//if (foundCollision && closest.x != -1)
-		//{
-		//	
-		//	avoidForce.x = getIsoLocation().x- closestCollsionPoint.x;
-		//	avoidForce.y = getIsoLocation().y - closestCollsionPoint.y;
-		//	//if (avoidForce.x - avoidForce.y < 0.02)
-		//	//{
-		//	//	avoidForce = avoidForce + normal;
-		//	//}
-		//	avoidForce = avoidForce.normalize ();
-		//	avoidForce = avoidForce * 1.0;
-		//}
-		//
+			mDirection = (direction *  (1 - scale) + (avoidForce * scale)).normalize();
+		}
+		
 
-		mDirection = (direction *  (1 - scale) + (avoidForce * scale));
-		mDirection = mDirection.normalize();
 		setLookDirection();
 	}
 	else
@@ -426,6 +452,71 @@ Vector3D Unit::findDirection()
 	}
 
 	return mDirection;
+}
+
+bool Unit::findRayCollision(const Vector3D& direction, const float& targetDistance,Vector3D& rayStart, const float& raylength, std::vector<shared_ptr<Unit>>& units, Vector3D& collisionLoc, Vector3D& objectLoc, float& scale, bool& isTile)
+{
+	Vector3D rayEnd = rayStart + direction * raylength;
+	bool foundCollision = false;
+	float distance = targetDistance;
+	Vector3D result;
+	shared_ptr<Unit> mTargetUnit;
+	isTile = false;
+	// Check through all units and determine which distance is the smallest using magnitude of vector between 2 units
+	for (auto unit : units)
+	{
+		if (mTargetUnit == nullptr || (mTargetUnit->getObjectID() != unit->getObjectID()))
+		{
+
+			
+			if (GameMath::GameMath::lineToCircle(rayStart, rayEnd, unit->getBoundingBox(), result))
+			{
+				
+				float curDistance = Vector3D(abs(rayStart.x - result.x), abs(rayStart.y - result.y), 0).GetSquaredMagnitude();
+				if (curDistance < distance)
+				{
+					foundCollision = true;
+					Vector3D avoidDir = unit->getIsoLocation() - getIsoLocation();
+					float avoidMagnitude = avoidDir.GetMagnitude() - unit->getBoundingBox().mRadius;
+					collisionLoc = result;
+					objectLoc = unit->getIsoLocation();
+					scale = mBoundingBox.mRadius / avoidMagnitude;
+					distance = curDistance;
+				}
+			}
+		}
+	}
+
+	std::vector<Vector3D> tiles = mCollisionSystem->TilesUnderLine(rayStart.x, rayStart.y, rayEnd.x, rayEnd.y);
+	for (auto tile : tiles)
+	{
+		if (mCollisionSystem->CheckTileCollision(tile, 0) == false)
+		{
+			
+			result = GameMath::GameMath::LineToRectPoint(rayStart, rayEnd, GameMath::Rectangle(tile, 1, 1));
+			float curDistance = Vector3D(abs(rayStart.x - result.x), abs(rayStart.y - result.y), 0).GetSquaredMagnitude();
+			if (curDistance < distance)
+			{
+				tile = tile + Vector3D(0.5, 0.5, 0);
+				foundCollision = true;
+				isTile = true;
+				Vector3D avoidDir = tile - getIsoLocation();
+				float avoidMagnitude = avoidDir.GetMagnitude();
+				collisionLoc = result;
+				if (floorf(result.x) == result.x)
+				{
+					objectLoc = Vector3D(tile.x, result.y,0);
+				}
+				else
+				{
+					objectLoc = Vector3D(result.x, tile.y, 0);
+				}
+				scale = mBoundingBox.mRadius / sqrt(curDistance);
+				distance = curDistance;
+			}
+		}
+	}
+	return foundCollision;
 }
 
 shared_ptr<Unit> Unit::getNearestEnemyUnit(const int& nRange)
@@ -688,7 +779,7 @@ locationFloatVector Unit::smoothPath(locationFloatVector inPath)
 		{
 			if (mCollisionSystem->CheckTileCollision(tiles[a], 0) == false)
 			{
-				outPath.push_back(inPath[nextNode]);
+				outPath.push_back(inPath[nextNode + 1]);
 				currentNode = nextNode;
 				break;
 			}
