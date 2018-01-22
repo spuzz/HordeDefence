@@ -5,6 +5,7 @@
 
 UnitInfoPanel::UnitInfoPanel(GUI* gui, const double& nWidthPerc, const double& nHeightPerc)
 {
+	CEGUI::Font& fnt = CEGUI::FontManager::getSingleton().createFromFile("mizufalp-8.font");
 	mLineGapWidth = 0.05;
 	mLineGapHeight = 0.04;
 	mPictureWidth = 0.03;
@@ -18,18 +19,23 @@ UnitInfoPanel::UnitInfoPanel(GUI* gui, const double& nWidthPerc, const double& n
 	mHealthTextInfo = (CEGUI::DefaultWindow*)gui->createWidget("OgreTray/StaticText",
 		glm::vec4(nWidthPerc + (mLineGapWidth * 2), nHeightPerc + mLineGapHeight, mTextWidth, mTextHeight), glm::vec4(0.0f), "HealthInfo");
 	mHealthTextInfo->setText("Health");
+	mHealthTextInfo->setFont(&fnt);
 	mArmorTextInfo = (CEGUI::DefaultWindow*)gui->createWidget("OgreTray/StaticText",
 		glm::vec4(nWidthPerc + mLineGapWidth, nHeightPerc + (mLineGapHeight*2), mTextWidth, mTextHeight), glm::vec4(0.0f), "ArmorInfo");
 	mArmorTextInfo->setText("Armor");
+	mArmorTextInfo->setFont(&fnt);
 	mRangeTextInfo = (CEGUI::DefaultWindow*)gui->createWidget("OgreTray/StaticText",
 		glm::vec4(nWidthPerc + (mLineGapWidth*3), nHeightPerc + (mLineGapHeight * 2), mTextWidth, mTextHeight), glm::vec4(0.0f), "RangeInfo");
 	mRangeTextInfo->setText("Range");
+	mRangeTextInfo->setFont(&fnt);
 	mDamageTextInfo = (CEGUI::DefaultWindow*)gui->createWidget("OgreTray/StaticText",
 		glm::vec4(nWidthPerc + mLineGapWidth, nHeightPerc + (mLineGapHeight * 3), mTextWidth, mTextHeight), glm::vec4(0.0f), "DamageInfo");
 	mDamageTextInfo->setText("Damage");
+	mDamageTextInfo->setFont(&fnt);
 	mAttackSpeedTextInfo = (CEGUI::DefaultWindow*)gui->createWidget("OgreTray/StaticText",
 		glm::vec4(nWidthPerc + (mLineGapWidth*3), nHeightPerc + (mLineGapHeight * 3), mTextWidth, mTextHeight), glm::vec4(0.0f), "AttackSpeedInfo");
 	mAttackSpeedTextInfo->setText("Attack Speed");
+	mAttackSpeedTextInfo->setFont(&fnt);
 
 	mHealth = gui->createImageButton(glm::vec4(nWidthPerc + mLineGapWidth, nHeightPerc + mLineGapHeight, mPictureWidth, mPictureHeight), "HealthIcon", "Icons");
 	mHealth->changeTextureArea(0.25, ((100.0/26.0)*23)/100, CEGUI::Sizef(16,16));

@@ -21,7 +21,7 @@ using std::make_shared;
 
 View::View()
 {
-	
+	mInit = false;
 	//scale = 32;
 	//zoomFactor = 9;
 	//xScreenLoc = 0;
@@ -134,13 +134,17 @@ bool View::loadMenu(const Views& n_view, shared_ptr<GLFWwindow> n_window, shared
 		m_guiList[(m_guiList.size() - 1)].reset();
 		m_guiList.pop_back();
 	}
-	txtrLoader = shared_ptr<textureLoader>(new textureLoader());
-	if (!txtrLoader->LoadGLTextures())								// Jump To Texture Loading Routine
+	if (mInit == false)
 	{
+		txtrLoader = shared_ptr<textureLoader>(new textureLoader());
+		if (!txtrLoader->LoadGLTextures())								// Jump To Texture Loading Routine
+		{
 
-		exit(0);									// If Texture Didn't Load Return FALSE
+			exit(0);									// If Texture Didn't Load Return FALSE
+		}
+		mInit = true;
 	}
-	
+
 	switch(n_view)
 	{
 	case GAMEUI:

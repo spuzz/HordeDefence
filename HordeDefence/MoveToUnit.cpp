@@ -19,6 +19,7 @@ bool MoveToUnit::update(float seconds)
 	moveVec.z = 0;
 	if (GameMath::GameMath::circleToCircle(GameMath::Circle(moveVec, mActor->getBoundingBox().mRadius), mActor->getTargetUnit()->getBoundingBox()))
 	{
+		mActor->setLookDirection((mActor->getTarget() - mActor->getIsoLocation()).normalize());
 		return true;
 	}
 	else

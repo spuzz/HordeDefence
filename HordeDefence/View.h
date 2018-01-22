@@ -90,4 +90,5 @@ private:
 	std::vector<shared_ptr<GUI>> m_guiList;
 	bool m_bMenuUp;
 	bool m_bBlockInput;
+	bool mInit;
 };

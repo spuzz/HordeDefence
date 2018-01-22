@@ -86,17 +86,17 @@ void Unit::attack(shared_ptr<Unit> enemy)
 		{
 			if (mAttackType == "magic")
 			{
-				mProjectiles.push_back(Projectile(getIsoLocation(), enemy, mAttackDamage, mProjectilesTypes["Fireball"], mPlayer));
+				//mProjectiles.push_back(Projectile(getIsoLocation(), enemy, mAttackDamage, mProjectilesTypes["Fireball"], mPlayer));
 			}
 			else
 			{
-				mProjectiles.push_back(Projectile(getIsoLocation(), enemy, mAttackDamage, mProjectilesTypes["Arrow"], mPlayer));
+				//mProjectiles.push_back(Projectile(getIsoLocation(), enemy, mAttackDamage, mProjectilesTypes["Arrow"], mPlayer));
 			}
 			
 		}
 		else
 		{
-			enemy->hit(mAttackDamage, this);
+			//enemy->hit(mAttackDamage, this);
 		}
 		mActionCD += mAttackSpeedPerSecond;
 	}
@@ -134,6 +134,11 @@ void Unit::move(Vector3D nMoveVec)
 				mBoundingBox.mLocation.x = mIsoLocation.x;
 				mBoundingBox.mLocation.y = mIsoLocation.y;
 				calcScreenLocation();
+			}
+			else
+			{
+				mDirection = (mTarget - mIsoLocation).normalize();
+				setLookDirection();
 			}
 		}
 	}
@@ -223,6 +228,11 @@ void Unit::newTarget(GameMath::Vector3D inTarget)
 void Unit::newTarget(shared_ptr<Unit> nUnit)
 {
 	setAction(shared_ptr<Action>(new Attack(this, nUnit)));
+}
+
+void Unit::newTargetAlly(shared_ptr<Unit> nUnit)
+{
+	setAction(shared_ptr<Action>(new MoveTo(this, nUnit->getIsoLocation())));
 }
 
 void Unit::attackMove(GameMath::Vector3D inTarget)
@@ -577,8 +587,8 @@ void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& z
 	int dir = getDirection();
 	dir -= 1;
 	if (dir < 0) { dir = 7; }
-	//if (mSelected)
-	//{
+	if (mSelected)
+	{
 		glLoadIdentity();
 		glTranslatef(xScreenLoc, yScreenLoc, zScreenLoc);
 		glTranslatef(mScreenLocation.x, mScreenLocation.y, 0);
@@ -599,8 +609,8 @@ void Unit::draw(const float& xScreenLoc, const float& yScreenLoc, const float& z
 		glEnd();
 		
 		glEnable(GL_TEXTURE_2D);
-	//	
-	//}
+		
+	}
 
 	if (mSelected || mPlayer != 0)
 	{
@@ -682,6 +692,12 @@ bool Unit::collide(const GameMath::Rectangle& rect)
 bool Unit::collide(const GameMath::Vector3D& point)
 {
 	return GameMath::GameMath::pointToCircle(point,mBoundingBox);
+}
+
+void Unit::setLookDirection(const Vector3D& direction)
+{
+	mDirection = direction;
+	setLookDirection();
 }
 
 void Unit::setLookDirection()

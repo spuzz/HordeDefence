@@ -5,6 +5,7 @@
 Control::Control(shared_ptr<Model>& nModel, shared_ptr<View>& nView)
 {
 	mModel = shared_ptr<Model>(nModel);
+	
 	mView = shared_ptr<View>(nView);
 	mView->setControl(shared_ptr<Control>(this));
 
@@ -14,7 +15,7 @@ Control::Control(shared_ptr<Model>& nModel, shared_ptr<View>& nView)
 	//mView->setupGL(window);
 	m_bNewScene = false;
 	m_bKeepLastScene = false;
-	mView->loadMenu(Views::GAMEUI, mWindow, mModel);
+	mView->loadMenu(Views::MAINMENU, mWindow, mModel);
 
 	auto time = std::chrono::high_resolution_clock::now();
 	auto lastTime = time;

@@ -24,6 +24,7 @@ GameGUI::GameGUI()
 	AnImage.SetBitDepth(32);
 
 	m_bGameOver = false;
+
 }
 
 void GameGUI::start()
@@ -82,7 +83,7 @@ void GameGUI::update()
 	}
 
 	updateGameInfo();
-	//updateMinimap();
+	updateMinimap();
 }
 
 void GameGUI::close()
@@ -92,11 +93,12 @@ void GameGUI::close()
 
 void GameGUI::loadGUI()
 {
+	m_model->init();
 	init("../HordeDefenceArt/GUI");
 	loadScheme("OgreTray.scheme");
-	setFont("DejaVuSans-10");
+	setFont("mizufalp-13");
 	loadGameGUI();
-	//loadMinimap();
+	loadMinimap();
 	loadCommands();
 	showMouseCursor();
 }
@@ -104,7 +106,7 @@ void GameGUI::loadGUI()
 void GameGUI::loadGameGUI()
 {
 	m_bBlockInput = false;
-
+	
 	// Mini map pane
 	CEGUI::FrameWindow* mapFrame = static_cast<CEGUI::FrameWindow*>(createWidget("OgreTray/FrameWindow",
 		glm::vec4(0.0f, 0.70f, 0.2f, 0.30f), glm::vec4(0.0f), "MapFrame"));
@@ -148,34 +150,44 @@ void GameGUI::loadGameGUI()
 
 bool GameGUI::loadCommands()
 {
+	CEGUI::Font& fnt = CEGUI::FontManager::getSingleton().createFromFile("mizufalp-8.font");
 	CEGUI::PushButton* command1 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.82f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command1"));
+	command1->setFont(&fnt);
 	command1->setText("Move");
 	CEGUI::PushButton* command2 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.8733f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command2"));
+	command2->setFont(&fnt);
 	command2->setText("Stop");
 	CEGUI::PushButton* command3 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.9266f, 0.725f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command3"));
+	command3->setFont(&fnt);
 	command3->setText("Attack");
 	CEGUI::PushButton* command4 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.82f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command4"));
+	command4->setFont(&fnt);
 	command4->setText("Attack Move");
 	CEGUI::PushButton* command5 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.8733f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command5"));
+	command5->setFont(&fnt);
 	command5->setText("Guard");
 	CEGUI::PushButton* command6 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.9266f, 0.81f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command6"));
+	command6->setFont(&fnt);
 	command6->setText("Retreat");
 	CEGUI::PushButton* command7 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.82f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command7"));
+	command7->setFont(&fnt);
 	command7->setText("Ability 1");
 	CEGUI::PushButton* command8 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.8733f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command8"));
+	command8->setFont(&fnt);
 	command8->setText("Ability 2");
 	CEGUI::PushButton* command9 = static_cast<CEGUI::PushButton*>(createWidget("OgreTray/Button",
 		glm::vec4(0.9266f, 0.895f, 0.0533f, 0.085f), glm::vec4(0.0f), "Command9"));
+	command9->setFont(&fnt);
 	command9->setText("Ability 3");
-	command9->setVisible(false);
+
 	return true;
 }
 
@@ -339,7 +351,7 @@ bool GameGUI::loadMinimap()
 		for (int y = 0; y<height; y++)
 		{
 			int r, g, b;
-			if (tiles[pair<int, int>(x,y)]->isWalkable())
+			if (tiles.find(pair<int, int>(x, y)) != tiles.end() && tiles[pair<int, int>(x,y)]->getIsoLocation().z == 2)
 			{
 
 				r = 0, g = 150, b = 0;
@@ -441,25 +453,50 @@ bool GameGUI::updateGameInfo()
 {
 	livesInfo->setText(std::to_string(m_model->mLives));
 	goldInfo->setText(std::to_string(m_model->mGold));
+	waveLeftInfo->setText(std::to_string(m_model->getWavesLeft()));
+	waveInfo->setText(std::to_string(m_model->getWaveTimer()));
 	return true;
 }
 
 bool GameGUI::createGameInfoIcons()
 {
-	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.62f, 0.835f, 0.03f, 0.06f), "Lives", "Default");
+	shared_ptr<ImageButton> btn = createImageButton(glm::vec4(0.62f, 0.835f, 0.03f, 0.06f), "Lives", "Icons");
+	btn->changeTextureArea(0.25, ((100.0 / 26.0) * 23) / 100, CEGUI::Sizef(16, 16));
 
 
 	livesInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
-		glm::vec4(0.655f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "LivesInfo");
-
+		glm::vec4(0.655f, 0.835f, 0.05f, 0.06f), glm::vec4(0.0f), "LivesInfo");
+	//livesInfo->setProperty("TextColours", "tl:FFFF0000 tr:FFFF0000 bl:FFFF0000 br:FFFF0000");
 	livesInfo->setText(std::to_string(m_model->mLives));
 
-	btn = createImageButton(glm::vec4(0.70f, 0.835f, 0.03f, 0.06f), "Gold", "Default");
+
+	btn = createImageButton(glm::vec4(0.70f, 0.835f, 0.03f, 0.06f), "Gold", "Icons");
+	btn->changeTextureArea(0.125, ((100.0 / 26.0) * 15) / 100, CEGUI::Sizef(32, 32));
 
 	goldInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
-		glm::vec4(0.735f, 0.835f, 0.03f, 0.06f), glm::vec4(0.0f), "GoldInfo");
+		glm::vec4(0.735f, 0.835f, 0.05f, 0.06f), glm::vec4(0.0f), "GoldInfo");
 
 	goldInfo->setText(std::to_string(m_model->mGold));
+
+	CEGUI::DefaultWindow* waveText = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.650f, 0.885f, 0.10f, 0.06f), glm::vec4(0.0f), "WaveText");
+
+	waveText->setText("Next Wave");
+
+
+	waveInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.680f, 0.915f, 0.05f, 0.06f), glm::vec4(0.0f), "WaveInfo");
+	waveInfo->setText(std::to_string(m_model->mGold));
+
+	CEGUI::DefaultWindow* waveLeftText = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.400f, 0.085f, 0.15f, 0.06f), glm::vec4(0.0f), "WaveLeftText");
+	waveLeftText->setText("Waves Left: ");
+
+	waveLeftInfo = (CEGUI::DefaultWindow*)createWidget("OgreTray/StaticText",
+		glm::vec4(0.525f, 0.085f, 0.15f, 0.06f), glm::vec4(0.0f), "WaveLeftInfo");
+
+	waveLeftInfo->setText(std::to_string(m_model->mGold));
+
 	return true;
 }
 
@@ -599,34 +636,6 @@ void GameGUI::gameOverMenu()
 
 }
 
-bool GameGUI::mouseAction(int button, int action)
-{
-	injectMouseAction(button, action);
-	return true;
-}
-
-bool GameGUI::keyAction(int key, int scancode, int action)
-{
-	if (m_bBlockInput)
-	{
-		return false;
-	}
-
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		if (toggleGameMenu(2))
-		{
-			m_Control->setPause(true);
-		}
-		else
-		{
-			m_Control->setPause(false);
-		}
-
-	if (checkScreenMoveKey(key, action))
-	{
-		return true;
-	}
-}
 
 bool GameGUI::onSelectUnit(const CEGUI::EventArgs& e)
 {
@@ -845,6 +854,34 @@ bool GameGUI::checkScreenMoveKey(int key, int action)
 	return true;
 }
 
+bool GameGUI::mouseAction(int button, int action)
+{
+	injectMouseAction(button, action);
+	return true;
+}
+
+bool GameGUI::keyAction(int key, int scancode, int action)
+{
+	if (m_bBlockInput)
+	{
+		return false;
+	}
+
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+		if (toggleGameMenu(2))
+		{
+			m_Control->setPause(true);
+		}
+		else
+		{
+			m_Control->setPause(false);
+		}
+
+	if (checkScreenMoveKey(key, action))
+	{
+		return true;
+	}
+}
 GameGUI::~GameGUI()
 {
 }

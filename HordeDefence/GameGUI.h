@@ -60,6 +60,8 @@ private:
 	shared_ptr<UnitInfoPanel> mUnitInfoPanel;
 
 	CEGUI::DefaultWindow* goldInfo;
+	CEGUI::DefaultWindow* waveInfo;
+	CEGUI::DefaultWindow* waveLeftInfo;
 	CEGUI::DefaultWindow* livesInfo;
 	BMP AnImage;
 	unsigned int *mPixelBuffer;

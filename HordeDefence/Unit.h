@@ -92,6 +92,7 @@ public:
 	void setTarget(GameMath::Vector3D inTarget);
 	void setTargetUnit(shared_ptr<Unit> nUnit);
 	void newTarget(GameMath::Vector3D inTarget);
+	void newTargetAlly(shared_ptr<Unit> nUnit);
 	void newTarget(shared_ptr<Unit> nUnit);
 	void clearTargetUnit() { mTargetUnit = nullptr; }
 	void findPath();
@@ -104,6 +105,8 @@ public:
 	void setStatus(statuses inStatus);
 	bool getAttackMove() { return mAttackMove;  }
 	void setAttackMove(bool nAttackMove) {  mAttackMove = nAttackMove; }
+	void setLookDirection(const Vector3D& direction);
+
 
 	void setSelected(const bool& inSelected) { mSelected = inSelected; }
 	void setAction(shared_ptr<Action> nAction) { mAction = shared_ptr<Action>(nAction);  }
@@ -140,6 +143,7 @@ protected:
 	virtual void changeAnim(string anim);
 	virtual bool checkReachedTarget(pair<float,float> location,pair<float,float> target);
 	virtual void setLookDirection();
+	
 	GameMath::Vector3D mTarget;
 	shared_ptr<Unit> mTargetUnit;
 	GameMath::Circle mBoundingBox;

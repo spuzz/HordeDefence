@@ -36,18 +36,23 @@ void GUI::init(const std::string& resourceDirectory) {
 		CEGUI::WidgetLookManager::setDefaultResourceGroup("looknfeels");
 		CEGUI::WindowManager::setDefaultResourceGroup("layouts");
 		CEGUI::ScriptModule::setDefaultResourceGroup("lua_scripts");
+		CEGUI::String texPath = "..\\HordeDefenceArt\\Units\\portraits\\Default.png";
+		CEGUI::Texture* text = createTexture("Default");
+		 
+		text->loadFromFile(texPath, "Units");
+		m_context = &CEGUI::System::getSingleton().createGUIContext(m_renderer->getDefaultRenderTarget());
 	}
 
-	m_context = &CEGUI::System::getSingleton().createGUIContext(m_renderer->getDefaultRenderTarget());
+	//m_renderer->destroyAllTextures();
+	m_context = &CEGUI::System::getSingleton().getDefaultGUIContext();
+	
 	m_root = CEGUI::WindowManager::getSingleton().createWindow("DefaultWindow", "root");
 	m_context->setRootWindow(m_root);
 
 	// add default texture so newly created buttons have something to use even if not visible
-	CEGUI::String texPath = "..\\HordeDefenceArt\\Units\\portraits\\Default.png";
-	CEGUI::Texture* text = createTexture("Default");
-	text->loadFromFile(texPath, "Units");
 
-	mTextures["Default"] = text;
+	CEGUI::Texture& text = m_renderer->getTexture("Default");
+	mTextures["Default"] = &text;
 }
 
 void GUI::destroy() {

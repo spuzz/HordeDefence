@@ -39,7 +39,7 @@ public:
 		}
 		if (key == GLFW_KEY_T) {
 			if (action == GLFW_PRESS) {
-				mModel->actionOnLocation(0, 0);
+				//mModel->actionOnLocation(0, 0);
 			}
 		}
 	}
@@ -129,7 +129,7 @@ public:
 			else if (button == GLFW_MOUSE_BUTTON_2)
 			{
 
-				mModel->actionOnLocation(mouse2DPos.first, mouse2DPos.second);
+				mModel->actionOnLocation(H.x, H.y, mouse2DPos.first, mouse2DPos.second);
 			}
 		}
 

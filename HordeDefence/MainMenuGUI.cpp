@@ -16,7 +16,7 @@ void MainMenuGUI::loadGUI()
 {
 	init("../HordeDefenceArt/GUI");
 	loadScheme("OgreTray.scheme");
-	setFont("DejaVuSans-10");
+	setFont("mizufalp-13");
 
 	CEGUI::FrameWindow* background = (CEGUI::FrameWindow*)createWidget("OgreTray/AltStaticImage",
 		glm::vec4(0.0f, 0.0f, 1.0f, 1.0f), glm::vec4(0.0f), "background");

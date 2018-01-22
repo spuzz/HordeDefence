@@ -20,7 +20,7 @@ bool AttackMove::update(float seconds)
 	shared_ptr<Unit> unit = mActor->getNearestEnemyUnit(8);
 	if (unit != nullptr)
 	{
-		if (mActor->getTargetUnit() == nullptr ||  mActor->getTargetUnit()->getObjectID() != unit->getObjectID() && attackMoveCD <= 0)
+		if (mAttack == nullptr ||  mActor->getTargetUnit() == nullptr ||  mActor->getTargetUnit()->getObjectID() != unit->getObjectID() && attackMoveCD <= 0)
 		{
 			changedTarget = true;
 			mAttack = new Attack(mActor, unit);

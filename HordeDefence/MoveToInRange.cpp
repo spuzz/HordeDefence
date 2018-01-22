@@ -20,6 +20,7 @@ bool MoveToInRange::update(float seconds)
 	float distVec = (mActor->getIsoLocation() - mActor->getTargetUnit()->getIsoLocation()).GetMagnitude() - mActor->getTargetUnit()->getBoundingBox().mRadius - mActor->getBoundingBox().mRadius;
 	if (mActor->getRange() >= distVec)
 	{
+		mActor->setLookDirection((mActor->getTarget() - mActor->getIsoLocation()).normalize());
 		return true;
 	}
 	else

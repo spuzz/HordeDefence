@@ -10,6 +10,7 @@ AIController::AIController(std::shared_ptr<Model> nModel, std::string mapName, s
 	mMapHeight = nMapHeight;
 	ParseXML(fileName);
 	mLastWaveSpawn = -1;
+	mTotalWaves = mWaves.size();
 }
 
 
@@ -20,6 +21,7 @@ AIController::~AIController()
 // For each frame determine if new wave needs to be spawned
 void AIController::Update(float nGameTimeSeconds)
 {
+	mGameTime = nGameTimeSeconds;
 	if (mWaves.size() == 0)
 	{
 		return;

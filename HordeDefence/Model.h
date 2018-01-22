@@ -21,6 +21,7 @@ public:
 	typedef map<int, shared_ptr<Unit>> UnitMap;
 	typedef map<int, shared_ptr<GameObject>> GameObjectMap;
 	Model();
+	void init();
 	virtual ~Model();
 
 	// Getters and setters
@@ -61,14 +62,15 @@ public:
 	std::vector<string> getUnitTypeClasses(const string& nUnitType);
 	UnitType getUnitType(const string& nUnitType, const string& nUnitClass);
 
+	int getWavesLeft();
+	int getWaveTimer();
 	// Game Info
 	int mLives;
 	int mGold;
 	bool mGameOver;
-
 	// Main Methods
 	virtual void update(float nSeconds);
-	void actionOnLocation(float x, float y);
+	void actionOnLocation(float x, float y, float isoX, float isoY);
 	void selectOnLocation(float x, float y);
 	void selectOnLocation(GameMath::Rectangle rect);
 	void selectUnit(int unit);
@@ -107,6 +109,8 @@ private:
 
 	// Allow view to know selection has been updated
 	bool mSelectionChanged;
+
+	bool mInit;
 
 	// delta time 
 	double mCurrentTime;

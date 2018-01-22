@@ -19,6 +19,7 @@ public:
 	virtual Vector3D& getIsoLocation() { return mIsoLocation; }
 	virtual void setIsoLocation(Vector3D nIsoLocation) { mIsoLocation = nIsoLocation; }
 
+	virtual void setLookDirection(const Vector3D& direction) {};
 	virtual Vector3D& getScreenLocation() { return mScreenLocation; }
 	virtual void calcScreenLocation();
 	virtual float& getZHeight() { return mZHeight; }

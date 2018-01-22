@@ -10,6 +10,12 @@
 
 Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector()) 
 {
+	mInit = false;
+}
+
+
+void Model::init()
+{
 	std::string fileName = "..\\HordeDefenceArt\\Maps\\MapOne.tmx";
 	tmxMap->ParseFile(fileName);
 	createMap();
@@ -28,8 +34,8 @@ Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 	mTeleporterID = addTeleporter(64, 64, 3);
 	getAllUnits()[mTeleporterID]->setMaxHealth(mLives);
 	getAllUnits()[mTeleporterID]->setCurrentHealth(mLives);
-	mAIController = new AIController(std::shared_ptr<Model>(this),"MapOne", mSpawnLocations,mMapWidth,mMapHeight);
-	int unitID = addHumanCharacter(60, 70, 3, "Human", "greatstaff", "clothes", "", 0,"Mage");
+	mAIController = new AIController(std::shared_ptr<Model>(this), "MapOne", mSpawnLocations, mMapWidth, mMapHeight);
+	int unitID = addHumanCharacter(60, 70, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
 	addHumanCharacter(62, 74, 3, "Human", "sword", "steel", "shield", 0, "Knight");
 	addHumanCharacter(60, 72, 3, "Human", "sword", "steel", "shield", 0, "Knight");
 	addHumanCharacter(58, 70, 3, "Human", "sword", "steel", "shield", 0, "Knight");
@@ -42,19 +48,18 @@ Model::Model() : tmxMap(new Tmx::Map()), mAstarGrid(new gridVector())
 	addHumanCharacter(68, 58, 3, "Human", "greatstaff", "clothes", "", 0, "Mage");
 
 	//mProjectiles.push_back(Projectile(Vector3D(67, 67,0), (--mAllUnits.end())->second, 10.0f, mProjTypes["Fireball"], 0));
- //   unitID = addHumanCharacter(40, 44, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
+	//   unitID = addHumanCharacter(40, 44, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
 	//getAllUnits()[unitID]->attackMove(Vector3D(46, 44, 0));
 
 	//addHumanCharacter(60, 60, 3, "Human", "greatstaff", "clothes", "", 0, "Knight");
 	//addBasicUnit(46, 35, 3, 1,1);
 	//addBasicUnit(34, 34, 3, "Orc", 1, "Warrior");
-	
-	
+
+
 	mSelectionChanged = false;
 	mGameOver = false;
+	mInit = true;
 }
-
-
 
 shared_ptr<Tile> Model::getTile(int x, int y)
 {
@@ -87,7 +92,7 @@ UnitType Model::getUnitType(const string& nUnitType, const string& nUnitClass)
 
 void Model::update(float nSeconds)
 {
-	if (mGameOver == true)
+	if (mGameOver == true || mInit == false)
 	{
 		return;
 	}
@@ -150,7 +155,7 @@ void Model::selectOnLocation(GameMath::Rectangle rect)
 	}
 	mSelectedUnits.clear();
 	for (auto unit : mPlayerUnits) {
-		GameMath::Rectangle unitRect(Vector3D(unit.second->getScreenLocation().x - 2, unit.second->getScreenLocation().y - 1,0), 4, 4);
+		GameMath::Rectangle unitRect(Vector3D(unit.second->getScreenLocation().x - 0.5, unit.second->getScreenLocation().y - 0.5, 0), 1, 2.0);
 		if (GameMath::GameMath::rectToRect(unitRect,rect))
 		{
 			unit.second->setSelected(true);
@@ -163,7 +168,7 @@ void Model::selectOnLocation(float x, float y)
 {
 	for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
 	{
-		GameMath::Rectangle unitRect(Vector3D(it->second->getScreenLocation().x - 2, it->second->getScreenLocation().y - 1, 0), 4, 4);
+		GameMath::Rectangle unitRect(Vector3D(it->second->getScreenLocation().x - 0.5, it->second->getScreenLocation().y - 0.5, 0), 1, 2.0);
 		if (GameMath::GameMath::pointToRect(Vector3D(x, y, 0), unitRect))
 		{
 			mSelectionChanged = true;
@@ -199,14 +204,15 @@ void Model::selectUnit(int unit)
 }
 
 // Determine if location clicked is a unit or tile and push action on selected units
-void Model::actionOnLocation(float x, float y) 
+void Model::actionOnLocation(float x, float y, float isoX, float isoY)
 {
 	// If no unit selected or an enemy is the selection do not do any action checks
 	if (mSelectedUnits.size() != 0 && mEnemySelected == false)
 	{
 		for (UnitMap::const_iterator it = mAllUnits.begin(); it != mAllUnits.end(); ++it)
 		{
-			if (it->second->collide(Vector3D(x, y, 0)))
+			GameMath::Rectangle unitRect(Vector3D(it->second->getScreenLocation().x - 0.5, it->second->getScreenLocation().y - 0.5, 0), 1, 2.0);
+			if (it->second->getPlayer() != 0 && GameMath::GameMath::pointToRect(Vector3D(x, y, 0), unitRect))
 			{
 				for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
 				{
@@ -216,11 +222,11 @@ void Model::actionOnLocation(float x, float y)
 				return;
 			}
 		}
-		if (getTile(x, y)->isWalkable())
+		if (getTile(isoX, isoY)->isWalkable())
 		{
 			for (UnitMap::const_iterator itSelected = mSelectedUnits.begin(); itSelected != mSelectedUnits.end(); ++itSelected)
 			{
-				itSelected->second->attackMove(Vector3D(x, y, 0));
+				itSelected->second->attackMove(Vector3D(isoX, isoY, 0));
 			}
 		}
 	}
@@ -246,10 +252,6 @@ void Model::createMap()
 					const Tmx::MapTile tileTest = tmxMap->GetTileLayers()[i - 1]->GetTile(y, x);
 					int gid = tmxMap->GetTileLayers()[i - 1]->GetTileId(y, x);
 					int walkable = tmxMap->GetTileset(0)->GetTile(gid)->GetProperties().GetIntProperty("Walkable");
-					if (x == 64 && y == 65)
-					{
-						int trap = 0;
-					}
 					if (walkable == 0)
 					{
 						
@@ -517,6 +519,16 @@ void Model::ParseProjXml(const string& inFileName)
 			projElement = projElement->NextSiblingElement();
 		}
 	}
+}
+
+int Model::getWavesLeft()
+{
+	return mAIController->WavesLeft();
+}
+
+int Model::getWaveTimer()
+{
+	return mAIController->SecondsToNextWave();
 }
 
 Model::~Model()

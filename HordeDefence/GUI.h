@@ -95,4 +95,5 @@ protected:
 	std::map<string, CEGUI::Texture*> mTextures;
 	int mImageCount;
 	virtual void perspectiveSetup() {};
+
 };
